@@ -1,5 +1,7 @@
 # TinyAry
 
+> Un framework diminuto con un corazón enorme. En honor a Ary.
+
 > [English](./README.md) | Español
 
 Mini framework **fullstack** para proyectos personales. Preact + Vite + Hono +
