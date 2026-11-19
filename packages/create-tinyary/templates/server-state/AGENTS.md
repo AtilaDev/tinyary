@@ -1,105 +1,105 @@
 # AGENTS.md — TinyAry
 
-Este archivo describe el mini framework con el que se generó este proyecto, para
-que cualquier agente (o persona) pueda entenderlo y modificarlo sin leer todo el
-código fuente.
+This file describes the mini framework this project was generated with, so any
+agent (or person) can understand it and modify it without reading all the
+source code.
 
-## Qué es este proyecto
+## What this project is
 
-Proyecto generado con `create-tinyary`. Usa **TinyAry**, un mini framework
-fullstack experimental: Preact + Vite + Hono + TypeScript estricto.
+A project generated with `create-tinyary`. It uses **TinyAry**, an experimental
+mini fullstack framework: Preact + Vite + Hono + strict TypeScript.
 
-- SSR real: los loaders corren en el servidor y el HTML sale completo.
-- Hidratación en el cliente con `bootstrap` e islas con `island()`.
-- Router de archivos: cada carpeta bajo `routes/` con un `index.tsx` es una página.
-- Sin navegación cliente: cada link hace un request completo al servidor.
+- Real SSR: loaders run on the server and the HTML ships complete.
+- Client hydration with `bootstrap` and islands with `island()`.
+- File-based router: every folder under `routes/` with an `index.tsx` is a page.
+- No client-side navigation: every link makes a full request to the server.
 
-No es un framework de producción. El foco es entender el flujo fullstack.
+Not a production framework. The focus is understanding the fullstack flow end
+to end.
 
-## Stack y comandos
+## Stack and commands
 
 ```bash
-pnpm install        # instalar dependencias
+pnpm install        # install dependencies
 pnpm dev            # dev server (Vite, SSR on demand)
 pnpm exec tsc --noEmit   # typecheck
 ```
 
-El puerto por defecto es 3000 (`PORT=4000 pnpm dev` para cambiarlo).
+Default port is 3000 (`PORT=4000 pnpm dev` to change).
 
-Dependencias clave: `tinyary` (el framework), `preact`, `hono`, `@hono/node-server`,
-`vite`, `@preact/preset-vite`. `tinyary` apunta a un checkout local via
-`link:` mientras no esté publicado.
+Key dependencies: `tinyary` (the framework), `preact`, `hono`,
+`@hono/node-server`, `vite`, `@preact/preset-vite`. `tinyary` points at a local
+checkout via `link:` until it is published.
 
-## Estructura
+## Structure
 
 ```
 .
-├── index.html              # shell con <div id="tinyary-root">
-├── vite.config.ts          # plugin tinyary + preact + dedupe
-├── server.ts               # re-exporta app/start de virtual:tinyary/server-entry
-├── tinyary.config.ts       # sesión (stub)
-├── styles/global.css       # CSS global
-├── routes/                 # páginas y layouts (file-based routing)
-│   ├── index.tsx           # ruta "/"
-│   ├── layout.tsx          # layout raíz (envuelve todas las páginas)
-│   └── <nombre>/index.tsx  # ruta "/<nombre>"
-└── lib/                    # (sólo en algunos templates) helpers de servidor
+├── index.html              # shell with <div id="tinyary-root">
+├── vite.config.ts          # tinyary plugin + preact + dedupe
+├── server.ts               # re-exports app/start from virtual:tinyary/server-entry
+├── tinyary.config.ts       # session (stub)
+├── styles/global.css       # global CSS
+├── routes/                 # pages and layouts (file-based routing)
+│   ├── index.tsx           # route "/"
+│   ├── layout.tsx          # root layout (wraps every page)
+│   └── <name>/index.tsx    # route "/<name>"
+└── lib/                    # (only in some templates) server helpers
 ```
 
-Sólo `index.tsx` define páginas y sólo `layout.tsx` define layouts. Otros
-nombres de archivo (`counter.tsx`, `lib/todos.ts`) **no son rutas**.
+Only `index.tsx` defines pages and only `layout.tsx` defines layouts. Other
+file names (`counter.tsx`, `lib/todos.ts`) **are not routes**.
 
-## El modelo fullstack: quién corre dónde
+## The fullstack model: who runs where
 
-Esta es la parte más importante. Hay **un solo árbol de componentes** que se
-renderiza dos veces (servidor y navegador), pero no todo el código corre en
-ambos lados.
+This is the most important part. There is **one component tree** rendered twice
+(server and browser), but not all code runs on both sides.
 
-### Corre en el SERVIDOR
+### Runs on the SERVER
 
-- `loader` — función async por request (GET/POST). Acceso a `ctx`.
-- `action` — función async en POST. Recibe `form: FormData`.
-- `session` en `tinyary.config.ts` — una vez por request.
-- SSR render (`renderSSR`) — genera el HTML.
-- Endpoints Hono que registres en `server.ts`.
+- `loader` — async function per request (GET/POST). Access to `ctx`.
+- `action` — async function on POST. Receives `form: FormData`.
+- `session` in `tinyary.config.ts` — once per request.
+- SSR render (`renderSSR`) — generates the HTML.
+- Hono endpoints you register in `server.ts`.
 
-### Corre en el NAVEGADOR
+### Runs in the BROWSER
 
-- `bootstrap` (generado por el plugin) — hidrata el árbol.
-- Hooks (`useState`, `useEffect`, …) y signals — durante hidratación y después.
-- Event handlers (`onClick`, `onSubmit`, …) — **sólo** en el navegador.
-- AryKit (`useAryState`, `useAryQuery`) — corren en ambos, pero el estado no se serializa.
+- `bootstrap` (generated by the plugin) — hydrates the tree.
+- Hooks (`useState`, `useEffect`, …) and signals — during hydration and after.
+- Event handlers (`onClick`, `onSubmit`, …) — **only** in the browser.
+- AryKit (`useAryState`, `useAryQuery`) — run on both sides, but state is not
+  serialized.
 
-### Corre en AMBOS lados
+### Runs on BOTH sides
 
-El **cuerpo del componente** (la función que devuelve JSX) se ejecuta en el
-servidor (para generar HTML) y en el navegador (para hidratar y re-renderizar).
-Por eso:
+The **component body** (the function returning JSX) executes on the server (to
+generate HTML) and in the browser (to hydrate and re-render). Therefore:
 
-- No pongas `fetch`, `localStorage`, `document` ni side effects en el cuerpo del
-  componente sin guardarlo en `useEffect`.
-- `useEffect`/`useLayoutEffect` y los event handlers se **ignoran** en el
-  servidor.
-- Los loaders **nunca** corren en el navegador.
+- Do not put `fetch`, `localStorage`, `document` or side effects in the
+  component body without guarding them in `useEffect`.
+- `useEffect`/`useLayoutEffect` and event handlers are **ignored** on the
+  server.
+- Loaders **never** run in the browser.
 
-### Regla de oro
+### Golden rule
 
-> Si toca filesystem, DB, cookies, sesiones o secretos → `loader`/`action` o
-> endpoint Hono.
-> Si toca DOM, eventos del usuario o estado local → cuerpo del componente o hook.
+> If it touches the filesystem, DB, cookies, sessions or secrets →
+> `loader`/`action` or a Hono endpoint.
+> If it touches the DOM, user events or local state → component or hook.
 
-## Rutas, loaders y actions
+## Routes, loaders and actions
 
-### Convenciones
+### Conventions
 
-- Sólo `index.tsx` define páginas.
-- `[id]` se convierte en `:id` y llega como `params.id`.
-- Un `layout.tsx` aplica a los **descendientes** de su carpeta, no al
-  `index.tsx` de esa misma carpeta.
-- El `layout.tsx` de la raíz aplica a todas las páginas.
-- El loader se exporta como `loader`; el action de un POST, como `action`.
+- Only `index.tsx` defines pages.
+- `[id]` becomes `:id` and arrives as `params.id`.
+- A `layout.tsx` applies to the **descendants** of its folder, not to the
+  `index.tsx` of that same folder.
+- The root `layout.tsx` applies to every page.
+- The loader is exported as `loader`; a POST action as `action`.
 
-### Página mínima
+### Minimal page
 
 ```tsx
 // routes/index.tsx
@@ -114,7 +114,7 @@ export default function Home({ data }: PageProps<{ mensaje: string }>) {
 }
 ```
 
-### Ruta dinámica
+### Dynamic route
 
 ```tsx
 // routes/items/[id]/index.tsx
@@ -129,7 +129,7 @@ export default function Item({ data, params }: PageProps) {
 }
 ```
 
-### Formulario (POST / action)
+### Form (POST / action)
 
 ```tsx
 // routes/login/index.tsx
@@ -139,7 +139,7 @@ import type { ActionCtx, PageProps } from 'tinyary'
 export const action = async (ctx: ActionCtx) => {
   const email = ctx.form.get('email')
   if (!email) notFound()
-  // ...validar...
+  // ...validate...
   redirect('/dashboard')
 }
 
@@ -154,8 +154,8 @@ export default function Login({ result }: PageProps<{}, { error?: string }>) {
 }
 ```
 
-`redirect(to)` lanza un control error → 303. `notFound()` → 404. Cualquier
-otro error → 500.
+`redirect(to)` throws a control error → 303. `notFound()` → 404. Any other
+error → 500.
 
 ### Layout
 
@@ -173,24 +173,24 @@ export default function RootLayout({ children }: { children?: ComponentChildren 
 }
 ```
 
-## Pasar datos del servidor al cliente
+## Passing data from server to client
 
-El flujo es:
+The flow is:
 
 ```
-loader (server) → data → payload (__tinyary_data__) → bootstrap → props del componente
+loader (server) → data → payload (__tinyary_data__) → bootstrap → props
 ```
 
-El componente recibe `data` como prop tanto en SSR como en hidratación. Para
-continuar un valor del servidor en el cliente, pasalo como prop desde el loader
-y usalo como semilla de `useState`/`useSignal`.
+The component receives `data` as a prop in both SSR and hydration. To carry a
+server value into the client, pass it as a prop from the loader and use it as
+the seed for `useState`/`useSignal`.
 
-**Importante**: el estado (`useState`, `useSignal`) no se serializa. El SSR pinta
-el estado inicial y el cliente arranca otra vez desde ese inicial.
+**Important**: state (`useState`, `useSignal`) is **not serialized**. SSR paints
+the initial state and the client starts again from that initial.
 
-## Estado e interactividad
+## State and interactivity
 
-Toda la página se hidrata. `island()` hoy es sólo un marcador.
+The whole page hydrates. `island()` is a marker today.
 
 ```tsx
 import { island, useState, useSignal } from 'tinyary'
@@ -203,7 +203,7 @@ function Counter() {
 export default island(Counter)
 ```
 
-Signals (sin transform de Babel):
+Signals (no Babel transform needed):
 
 ```tsx
 function Counter({ inicial }: { inicial: number }) {
@@ -212,14 +212,14 @@ function Counter({ inicial }: { inicial: number }) {
 }
 ```
 
-Hooks disponibles desde `tinyary`: `useState`, `useEffect`, `useLayoutEffect`,
+Hooks available from `tinyary`: `useState`, `useEffect`, `useLayoutEffect`,
 `useMemo`, `useRef`, `useCallback`, `useReducer`, `useContext`, `useId`.
 Signals: `signal`, `computed`, `effect`, `batch`, `untracked`, `useSignal`,
 `useComputed`, `useSignalEffect`.
 
-## Estado compartido entre islas (AryKit)
+## Shared state across islands (AryKit)
 
-Subpath opt-in: `tinyary/arykit`.
+Opt-in subpath: `tinyary/arykit`.
 
 ```tsx
 import { island } from 'tinyary'
@@ -235,40 +235,40 @@ function Display() {
 export const DisplayIsland = island(Display)
 ```
 
-- `createAry(valorInicial, opciones)` crea un átomo compartido.
-- `useAryState(atom)` devuelve `[valor, setValor]`.
-- `persist: 'clave'` guarda en `localStorage`.
-- `useAryQuery` / `useAryMutation` para server state con caché.
-- `AryDevTools` panel flotante para inspeccionar/resetear/time-travel.
+- `createAry(initialValue, options)` creates a shared atom.
+- `useAryState(atom)` returns `[value, setValue]`.
+- `persist: 'key'` stores in `localStorage`.
+- `useAryQuery` / `useAryMutation` for server state with cache.
+- `AryDevTools` floating panel (inspect, reset, time travel).
 
-La persistencia es SSR-safe: el primer render usa el valor inicial y el valor
-guardado se aplica después de hidratar.
+Persistence is SSR-safe: the first render uses the initial value and the stored
+value is applied after hydration.
 
-## Reglas de estado y SSR
+## State rules and SSR
 
-- El estado no se serializa. Para continuar un valor del servidor, pasalo como
-  prop desde el loader.
-- No uses signals ni átomos de AryKit a nivel de módulo para estado por
-  request: en SSR el módulo se comparte entre requests y filtra estado. Para
-  datos por request usá el loader.
-- No accedas a `document`/`window`/`localStorage` en el cuerpo del componente
-  sin guardarlo en `useEffect`.
-- No uses valores no determinísticos (`Math.random`, `Date.now`) en el cuerpo
-  del componente sin guardarlos: rompen la hidratación.
+- State is not serialized. To carry a server value, pass it as a prop from the
+  loader.
+- Do not use signals or AryKit atoms at module level for per-request state in
+  SSR: the module is shared across requests and leaks state. Use the loader for
+  per-request data.
+- Do not access `document`/`window`/`localStorage` in the component body without
+  guarding in `useEffect`.
+- Do not use non-deterministic values (`Math.random`, `Date.now`) in the
+  component body without storing them: they break hydration.
 
-## Server HTTP, sesión, cookies
+## Server HTTP, session, cookies
 
-El servidor se arma con `createServer` (en `tinyary/server`). El proyecto suele
-tener sólo:
+The server is built with `createServer` (in `tinyary/server`). A project
+usually has only:
 
 ```ts
 // server.ts
 export { app, start } from 'virtual:tinyary/server-entry'
 ```
 
-### Sesión
+### Session
 
-`tinyary.config.ts` exporta `session`:
+`tinyary.config.ts` exports `session`:
 
 ```ts
 import type { RequestCtx } from 'tinyary'
@@ -280,23 +280,14 @@ export const session = async (ctx: RequestCtx) => {
 }
 ```
 
-Se ejecuta una vez por request antes del loader; el resultado queda en
-`ctx.user` (`{ id, name } | null`). Hoy es un stub (no valida cookies firmadas).
+It runs once per request before the loader; the result lands in `ctx.user`
+(`{ id, name } | null`). It is a stub today.
 
-### Contexto disponible (`RequestCtx`)
+### Available context (`RequestCtx`)
 
 `request`, `url`, `params`, `query`, `cookies` (Map), `user`.
 
-### Control de flujo
-
-- `redirect(to)` → 303.
-- `notFound()` → 404.
-- Cualquier otro error → log + body `"500"`.
-
-## Endpoints JSON propios
-
-Si necesitás rutas que no son páginas (API JSON), registrá un Hono propio y
-montá las páginas después:
+### Custom JSON endpoints
 
 ```ts
 // server.ts
@@ -310,7 +301,7 @@ app.get('/api/time', (c) =>
   c.json({ mensaje: 'ok', ahora: new Date().toISOString() }),
 )
 
-app.route('/', pages)
+app.route('/', pages)   // pages go after the API
 
 export { app }
 export function start() {
@@ -321,21 +312,20 @@ export function start() {
 }
 ```
 
-## Imports: qué importar de dónde
+## Imports: what to import from where
 
-| Subpath | Qué exporta | Dónde se usa |
+| Subpath | Exports | Where used |
 |---|---|---|
-| `tinyary` | hooks, signals, `island`, `matchPattern`, tipos, `redirect`/`notFound`/`loader`/`action` | app y navegador |
-| `tinyary/server` | `createServer`, `scanRoutes`, `matchRoute`, `renderSSR`, `injectData` | sólo servidor (importa `node:fs`) |
+| `tinyary` | hooks, signals, `island`, types, `redirect`/`notFound`/`loader`/`action` | app and browser |
+| `tinyary/server` | `createServer`, `scanRoutes`, `matchRoute`, `renderSSR`, `injectData` | server only |
 | `tinyary/vite` | plugin `tinyary()` | `vite.config.ts` |
-| `tinyary/client` | `bootstrap`, `island` | generado por el plugin |
-| `tinyary/client-routes` | `matchPattern` browser-safe | generado por el plugin |
-| `tinyary/arykit` | átomos, queries, DevTools | opt-in |
+| `tinyary/client` | `bootstrap`, `island` | generated by the plugin |
+| `tinyary/client-routes` | `matchPattern` browser-safe | generated by the plugin |
+| `tinyary/arykit` | atoms, queries, DevTools | opt-in |
 
-La raíz de `tinyary` es browser-safe: no arrastra `node:fs`. Lo server-only
-vive en `tinyary/server`.
+The root of `tinyary` is browser-safe: it does not drag `node:fs`.
 
-## Vite config (no tocar sin motivo)
+## Vite config (do not touch without reason)
 
 ```ts
 import { defineConfig } from 'vite'
@@ -344,28 +334,27 @@ import { tinyary } from 'tinyary/vite'
 
 export default defineConfig({
   plugins: [preact(), tinyary()],
-  appType: 'custom',            // las páginas las sirve el middleware SSR
+  appType: 'custom',            // pages are served by the SSR middleware
   resolve: { dedupe: ['preact'] },
   optimizeDeps: { include: ['preact', 'preact/hooks', 'preact/compat'] },
   server: { port: Number(process.env.PORT ?? 3000) },
-  build: { target: 'esnext' },  // top-level await en virtual components
-  ssr: { noExternal: true },    // tinyary publica TS fuente
+  build: { target: 'esnext' },  // top-level await
+  ssr: { noExternal: true },    // tinyary ships TypeScript source
 })
 ```
 
-- `appType: 'custom'` evita el fallback SPA de Vite.
-- `resolve.dedupe: ['preact']` evita dos instancias de Preact (rompería la
-  hidratación).
-- `optimizeDeps.include` con `preact/compat` es necesario para AryKit.
+- `appType: 'custom'` avoids Vite's SPA fallback.
+- `resolve.dedupe: ['preact']` avoids two Preact instances.
+- `optimizeDeps.include` with `preact/compat` is required for AryKit.
 
-## Agregar una ruta nueva
+## Adding a new route
 
-1. Crear `routes/<nombre>/index.tsx` (o `routes/[id]/index.tsx` para dinámica).
-2. Exportar un componente default y, si hace falta, `loader`/`action`.
-3. El plugin detecta el archivo y hace full-reload en dev.
-4. Agregar el link en `routes/layout.tsx` (o en la página).
+1. Create `routes/<name>/index.tsx` (or `routes/[id]/index.tsx` for dynamic).
+2. Export a default component and, if needed, `loader`/`action`.
+3. The plugin detects the file and full-reloads in dev.
+4. Add the link in `routes/layout.tsx` (or in the page).
 
-## Agregar una isla interactiva
+## Adding an interactive island
 
 ```tsx
 import { island, useState } from 'tinyary'
@@ -378,37 +367,47 @@ function Counter() {
 export default island(Counter)
 ```
 
-`island()` es la identidad: marca el componente como interactivo. Hoy toda la
-página se hidrata igual; la carga selectiva queda para otra etapa.
+`island()` is the identity: it marks the component as interactive. Today the
+whole page hydrates the same way; selective loading is for a later stage.
 
-## Tareas comunes
+## Common tasks
 
-- **Leer un archivo/DB en una página**: ponerlo en el `loader`.
-- **Manejar un form**: ponerlo en el `action`, usar `<form method="post">`.
-- **Compartir estado entre islas**: usar AryKit (`createAry`).
-- **Agregar un endpoint JSON**: registrar en `server.ts` antes de `app.route('/', pages)`.
-- **Cambiar estilos**: editar `styles/global.css` (se sirve como asset estático).
+- **Read a file/DB in a page**: put it in the `loader`.
+- **Handle a form**: put it in the `action`, use `<form method="post">`.
+- **Share state across islands**: use AryKit (`createAry`).
+- **Add a JSON endpoint**: register it in `server.ts` before
+  `app.route('/', pages)`.
+- **Change styles**: edit `styles/global.css` (served as a static asset).
 
-## Navegación client-side
+## Gotchas
 
-Los `<a>` del mismo origen se interceptan automáticamente: en lugar de un
-reload completo, se hace `fetch` del HTML, se extrae `#__tinyary_data__` y se
-re-renderiza la página. La URL se actualiza con `history.pushState` y
-back/forward funciona.
+- Do not use `Math.random()`/`Date.now()` in the component body without
+  storing it: breaks hydration.
+- Do not use signals or module-level AryKit atoms for per-request state in SSR.
+- Do not access `document`/`window` outside `useEffect`.
+- `preact` is a peer dependency: the app installs and dedupes it. Do not
+  install a second copy.
+- In-memory todos/state reset when the server restarts.
 
-- Los formularios POST siguen haciendo full reload.
-- Si el fetch falla o la ruta no matchea, se hace navegación normal.
-- No hace falta usar un componente especial: los `<a>` normales ya funcionan.
+## Client-side navigation
 
-- No uses `Math.random()`/`Date.now()` en el cuerpo del componente sin
-  guardarlo: rompe la hidratación.
-- No uses signals/átomos de módulo para estado por request en SSR.
-- No accedas a `document`/`window` fuera de `useEffect`.
-- `preact` es peer dependency: la app lo instala y deduplica. No instales una
-  segunda copia.
-- Los todos/estado en memoria se resetean al reiniciar el servidor.
+Same-origin `<a>` links are intercepted automatically: instead of a full
+reload, the HTML is fetched, the `#__tinyary_data__` payload is parsed, and
+the page is re-rendered with Preact's `render`. The URL is updated with
+`history.pushState` and back/forward works.
 
-## Más info
+- **No component changes needed**: plain `<a>` already works.
+- **POST forms are also submitted without reload** (fetch + re-render).
+- **Loading state**: `data-navigating` is added to `<html>` plus a minimal
+  progress bar (`#tinyary-progress`).
+- **Scroll**: goes to the top on new navigation; restores position on
+  back/forward.
+- **Fallback**: if the fetch fails or the route does not match, a normal
+  navigation (full reload) is performed.
 
-- `README.md` del framework (en el repo de TinyAry) tiene la guía completa.
-- Tests: `pnpm test`. Smoke end-to-end: `pnpm smoke`.
+This is the "fetch HTML" option (reuses SSR, no new data endpoint).
+
+## More info
+
+- The framework's `README.md` (in the TinyAry repo) has the full guide.
+- Tests: `pnpm test`. End-to-end smoke: `pnpm smoke`.

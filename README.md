@@ -1,32 +1,35 @@
 # TinyAry
 
-Mini framework **fullstack** para proyectos personales. Preact + Vite + Hono +
-TypeScript estricto. SSR real, hidratación en el cliente, router de archivos.
+> English | [Español](./README.es.md)
 
-> No es un framework de producción. Sirve para entender el flujo completo de un
-> request: qué corre en el servidor, qué se manda al navegador y qué se hidrata.
+Mini **fullstack** framework for personal projects. Preact + Vite + Hono +
+TypeScript strict. Real SSR, client hydration, file-based router.
 
-## En 30 segundos
+> Not a production framework. It exists to understand the full flow of a request:
+> what runs on the server, what is sent to the browser, and what hydrates.
 
-- Cada archivo `routes/<algo>/index.tsx` es una página con su propia URL.
-- El `loader` de esa página corre en el **servidor** y devuelve datos.
-- El componente se renderiza a HTML en el servidor (SSR) y se **hidrata** en el
-  navegador.
-- El `action` corre en el servidor cuando llega un `POST` (formularios).
-- `island()` marca un componente como interactivo (hoy toda la página se
-  hidrata igual).
+## In 30 seconds
 
-**Regla de oro:** si toca filesystem, DB, cookies o secretos → `loader`/`action`
-o endpoint Hono. Si toca DOM, eventos o estado local → componente o hook.
+- Every `routes/<name>/index.tsx` file is a page with its own URL.
+- The page's `loader` runs on the **server** and returns data.
+- The component is rendered to HTML on the server (SSR) and **hydrated** in the
+  browser.
+- The `action` runs on the server when a `POST` arrives (forms).
+- `island()` marks a component as interactive (today the whole page hydrates
+  the same way).
 
-## Requisitos
+**Golden rule:** if it touches the filesystem, DB, cookies or secrets →
+`loader`/`action` or a Hono endpoint. If it touches the DOM, user events or
+local state → component or hook.
+
+## Requirements
 
 - Node 24+
 - pnpm 10+
 
-## Inicio rápido
+## Quick start
 
-Levantá el ejemplo incluido:
+Run the included example:
 
 ```bash
 pnpm install
@@ -34,7 +37,7 @@ pnpm --filter hello dev
 # http://localhost:3000/
 ```
 
-O generá un proyecto nuevo:
+Or generate a new project:
 
 ```bash
 node packages/create-tinyary/bin.js mi-app
@@ -43,65 +46,65 @@ pnpm install
 pnpm dev
 ```
 
-Sin `--template` la CLI pregunta qué ejemplo querés (ver [CLI](#cli-create-tinyary)).
+Without `--template` the CLI asks which example you want (see [CLI](#cli-create-tinyary)).
 
-## Servidor vs. cliente (la parte que más confunde)
+## Server vs. client (the part that confuses most)
 
-Hay **un solo árbol de componentes** que se renderiza dos veces (servidor y
-navegador), pero no todo el código corre en ambos lados.
+There is **one component tree** rendered twice (server and browser), but not
+all code runs on both sides.
 
-| Corre en el **servidor** | Corre en el **navegador** | Corre en **ambos** |
+| Runs on the **server** | Runs in the **browser** | Runs on **both** |
 |---|---|---|
-| `loader` (por request) | `bootstrap` (hidratación) | Cuerpo del componente (JSX) |
-| `action` (en POST) | Hooks y signals | |
+| `loader` (per request) | `bootstrap` (hydration) | Component body (JSX) |
+| `action` (on POST) | Hooks and signals | |
 | `session` (`tinyary.config.ts`) | Event handlers (`onClick`, …) | |
 | SSR render | | |
 | Endpoints Hono | | |
-| | | AryKit — Store en módulo, evaluado en ambos lados. En SSR el estado es el inicial (no se serializa); en el cliente persiste y se hidrata. |
+| | | AryKit — module-level store, evaluated on both sides. In SSR the state is the initial one (it is not serialized); on the client it persists and hydrates. |
 
-Consecuencias prácticas:
+Practical consequences:
 
-- **No pongas** `fetch`, `localStorage`, `document` ni side effects en el cuerpo
-  del componente sin guardarlo en `useEffect`.
-- `useEffect` y los event handlers se **ignoran** en el servidor.
-- Los loaders **nunca** corren en el navegador: para datos en cliente usá
-  `useAryQuery` o un `fetch` dentro de `useEffect`.
-- El estado (`useState`, `useSignal`) **no se serializa**. Para continuar un
-  valor del servidor, pasalo como prop desde el loader.
+- **Do not put** `fetch`, `localStorage`, `document` or side effects in the
+  component body without guarding them in `useEffect`.
+- `useEffect` and event handlers are **ignored** on the server.
+- Loaders **never** run in the browser: for client data use `useAryQuery` or a
+  `fetch` inside `useEffect`.
+- State (`useState`, `useSignal`) is **not serialized**. To carry a server
+  value to the client, pass it as a prop from the loader.
 
-## Flujo de un request (SSR)
+## Request flow (SSR)
 
 ```
-navegador  →  Vite (dev)  →  Hono (server.ts)
+browser  →  Vite (dev)  →  Hono (server.ts)
                                   │
-                                  ├─ matchRoute(path)        # qué página/layout
-                                  ├─ loadModule(page)        # import dinámico
+                                  ├─ matchRoute(path)        # which page/layout
+                                  ├─ loadModule(page)        # dynamic import
                                   ├─ session(ctx)            # tinyary.config.ts
-                                  ├─ action(ctx)             # sólo si POST
-                                  ├─ loader(ctx)             # tus datos
-                                  ├─ render(...)             # árbol Preact
+                                  ├─ action(ctx)             # only on POST
+                                  ├─ loader(ctx)             # your data
+                                  ├─ render(...)             # Preact tree
                                   ├─ renderSSR(tree)         # HTML string
-                                  └─ injectData(shell, …)    # inyecta HTML + JSON
+                                  └─ injectData(shell, …)    # injects HTML + JSON
                                   │
-navegador  ←  HTML completo con <script id="__tinyary_data__">
+browser  ←  full HTML with <script id="__tinyary_data__">
                                   │
-                                  └─ bootstrap lee el JSON e hidrata
+                                  └─ bootstrap reads the JSON and hydrates
 ```
 
-El script `#__tinyary_data__` es el puente entre servidor y cliente: lleva
-`{ data, params, result }`.
+The `#__tinyary_data__` script is the bridge between server and client: it
+carries `{ data, params, result }`.
 
-## Rutas, loaders y actions
+## Routes, loaders and actions
 
-### Convenciones de archivos
+### File conventions
 
-- Sólo `index.tsx` define páginas.
-- `[id]` se convierte en `:id` y llega como `params.id`.
-- Un `layout.tsx` aplica a los **descendientes** de su carpeta, no al
-  `index.tsx` de esa misma carpeta.
-- El `layout.tsx` de la raíz aplica a todas las páginas.
+- Only `index.tsx` defines pages.
+- `[id]` becomes `:id` and arrives as `params.id`.
+- A `layout.tsx` applies to the **descendants** of its folder, not to the
+  `index.tsx` of that same folder.
+- The root `layout.tsx` applies to every page.
 
-### Página mínima
+### Minimal page
 
 ```tsx
 // routes/index.tsx
@@ -116,7 +119,7 @@ export default function Home({ data }: PageProps<{ mensaje: string }>) {
 }
 ```
 
-### Formulario (POST)
+### Form (POST)
 
 ```tsx
 // routes/login/index.tsx
@@ -141,12 +144,12 @@ export default function Login({ result }: PageProps<{}, { error?: string }>) {
 }
 ```
 
-- `redirect(to)` → respuesta 303.
+- `redirect(to)` → 303 response.
 - `notFound()` → 404.
-- Cualquier otro error → log + body `"500"`.
-- El `result` del action se pasa al componente como prop.
+- Any other error → log + body `"500"`.
+- The action's `result` is passed to the component as a prop.
 
-### Ruta dinámica
+### Dynamic route
 
 ```tsx
 // routes/items/[id]/index.tsx
@@ -173,20 +176,19 @@ export default function RootLayout({ children }: { children?: ComponentChildren 
 }
 ```
 
-## Pasar datos del servidor al cliente
+## Passing data from server to client
 
 ```
 loader (server) → data → payload (__tinyary_data__) → bootstrap → props
 ```
 
-El componente recibe `data` como prop en SSR y en hidratación. Para seguir un
-valor del servidor en el cliente, pasalo como prop desde el loader y usalo como
-semilla de `useState`/`useSignal`.
+The component receives `data` as a prop in both SSR and hydration. To carry a
+server value into the client, pass it as a prop from the loader and use it as
+the seed for `useState`/`useSignal`.
 
-## Estado e interactividad
+## State and interactivity
 
-Toda la página se hidrata. `island()` es un marcador (hoy no hace carga
-selectiva).
+The whole page hydrates. `island()` is a marker (no selective hydration today).
 
 ```tsx
 import { island, useState, useSignal } from 'tinyary'
@@ -199,7 +201,7 @@ function Counter() {
 export default island(Counter)
 ```
 
-Signals (sin transform de Babel):
+Signals (no Babel transform needed):
 
 ```tsx
 function Counter({ inicial }: { inicial: number }) {
@@ -208,14 +210,14 @@ function Counter({ inicial }: { inicial: number }) {
 }
 ```
 
-Hooks desde `tinyary`: `useState`, `useEffect`, `useLayoutEffect`, `useMemo`,
+Hooks from `tinyary`: `useState`, `useEffect`, `useLayoutEffect`, `useMemo`,
 `useRef`, `useCallback`, `useReducer`, `useContext`, `useId`.  
 Signals: `signal`, `computed`, `effect`, `batch`, `untracked`, `useSignal`,
 `useComputed`, `useSignalEffect`.
 
 ## AryKit (`tinyary/arykit`)
 
-Subpath opt-in para estado compartido y server state.
+Opt-in subpath for shared state and server state.
 
 ```tsx
 import { island } from 'tinyary'
@@ -231,40 +233,41 @@ function Display() {
 export const DisplayIsland = island(Display)
 ```
 
-- `createAry(valorInicial, opciones)` crea un átomo compartido entre islas.
-- `useAryState(atom)` devuelve `[valor, setValor]`.
-- `persist: 'clave'` guarda en `localStorage`.
-- `useAryQuery` / `useAryMutation` para server state con caché, refetch e
-  invalidación.
-- `AryDevTools` panel flotante (inspeccionar, resetear, time travel).
+- `createAry(initialValue, options)` creates an atom shared across islands.
+- `useAryState(atom)` returns `[value, setValue]`.
+- `persist: 'key'` stores in `localStorage`.
+- `useAryQuery` / `useAryMutation` for server state with cache, refetch and
+  invalidation.
+- `AryDevTools` floating panel (inspect, reset, time travel).
 
-La persistencia es SSR-safe: el primer render usa el valor inicial y el valor
-guardado se aplica después de hidratar.
+Persistence is SSR-safe: the first render uses the initial value and the stored
+value is applied after hydration.
 
-## Reglas de estado y SSR
+## State rules and SSR
 
-- El estado no se serializa. Para seguir un valor del servidor, pasalo como
-  prop desde el loader.
-- No uses signals ni átomos de AryKit a nivel de módulo para estado por
-  request: en SSR el módulo se comparte entre requests y filtra estado.
-- No accedas a `document`/`window`/`localStorage` en el cuerpo del componente
-  sin guardarlo en `useEffect`.
-- No uses valores no determinísticos (`Math.random`, `Date.now`) en el cuerpo
-  del componente sin guardarlos: rompen la hidratación.
+- State is not serialized. To carry a server value, pass it as a prop from the
+  loader.
+- Do not use signals or AryKit atoms at module level for per-request state: in
+  SSR that module is shared across requests and leaks state. Use the loader for
+  per-request data.
+- Do not access `document`/`window`/`localStorage` in the component body without
+  guarding in `useEffect`.
+- Do not use non-deterministic values (`Math.random`, `Date.now`) in the
+  component body without storing them: they break hydration.
 
-## Server HTTP: Hono, sesión, cookies
+## Server HTTP: Hono, session, cookies
 
-El servidor se arma con `createServer` (en `tinyary/server`). El proyecto suele
-tener sólo:
+The server is built with `createServer` (in `tinyary/server`). A project usually
+has only:
 
 ```ts
 // server.ts
 export { app, start } from 'virtual:tinyary/server-entry'
 ```
 
-### Sesión
+### Session
 
-`tinyary.config.ts` exporta `session`:
+`tinyary.config.ts` exports `session`:
 
 ```ts
 import type { RequestCtx } from 'tinyary'
@@ -276,14 +279,14 @@ export const session = async (ctx: RequestCtx) => {
 }
 ```
 
-Se ejecuta una vez por request antes del loader; el resultado queda en
-`ctx.user` (`{ id, name } | null`). Hoy es un stub.
+It runs once per request before the loader; the result lands in `ctx.user`
+(`{ id, name } | null`). It is a stub today.
 
-### Contexto disponible (`RequestCtx`)
+### Available context (`RequestCtx`)
 
 `request`, `url`, `params`, `query`, `cookies` (Map), `user`.
 
-### Endpoints JSON propios
+### Custom JSON endpoints
 
 ```ts
 // server.ts
@@ -310,31 +313,31 @@ export function start() {
 
 ## Virtual modules
 
-El plugin expone cuatro módulos:
+The plugin exposes four modules:
 
-- `virtual:tinyary/routes` — manifest de rutas escaneadas.
-- `virtual:tinyary/components` — componentes (top-level await).
-- `virtual:tinyary/server-entry` — app Hono y arranque.
-- `virtual:tinyary/client-entry` — entry del navegador que hidrata.
+- `virtual:tinyary/routes` — scanned route manifest.
+- `virtual:tinyary/components` — components (top-level await).
+- `virtual:tinyary/server-entry` — Hono app and startup.
+- `virtual:tinyary/client-entry` — browser entry that hydrates.
 
-En el cliente, `tinyary/routes` se resuelve a una copia browser-safe de
-`matchPattern` para no arrastrar `node:fs`.
+On the client, `tinyary/routes` resolves to a browser-safe copy of
+`matchPattern` so `node:fs` is not dragged into the bundle.
 
-## Superficie de imports
+## Import surface
 
-| Subpath | Qué exporta | Dónde se usa |
+| Subpath | Exports | Where it is used |
 |---|---|---|
-| `tinyary` | hooks, signals, `island`, tipos, `redirect`/`notFound`/`loader`/`action` | app y navegador |
-| `tinyary/server` | `createServer`, `scanRoutes`, `matchRoute`, `renderSSR`, `injectData` | sólo servidor |
+| `tinyary` | hooks, signals, `island`, types, `redirect`/`notFound`/`loader`/`action` | app and browser |
+| `tinyary/server` | `createServer`, `scanRoutes`, `matchRoute`, `renderSSR`, `injectData` | server only |
 | `tinyary/vite` | plugin `tinyary()` | `vite.config.ts` |
-| `tinyary/client` | `bootstrap`, `island` | generado por el plugin |
-| `tinyary/client-routes` | `matchPattern` browser-safe | generado por el plugin |
-| `tinyary/routes` | `scanRoutes`, `matchPattern`, `matchRoute` | Server-side (`src/routes.ts`, importa `node:fs`). **No** es generado por el plugin. |
-| `tinyary/arykit` | átomos, queries, DevTools | opt-in |
+| `tinyary/client` | `bootstrap`, `island` | generated by the plugin |
+| `tinyary/client-routes` | `matchPattern` browser-safe | generated by the plugin |
+| `tinyary/routes` | `scanRoutes`, `matchPattern`, `matchRoute` | Server-side (`src/routes.ts`, imports `node:fs`). **Not** generated by the plugin. |
+| `tinyary/arykit` | atoms, queries, DevTools | opt-in |
 
-La raíz de `tinyary` es browser-safe: no arrastra `node:fs`.
+The root of `tinyary` is browser-safe: it does not drag `node:fs`.
 
-## Vite config (no tocar sin motivo)
+## Vite config (do not touch without reason)
 
 ```ts
 import { defineConfig } from 'vite'
@@ -352,9 +355,9 @@ export default defineConfig({
 })
 ```
 
-- `appType: 'custom'` evita el fallback SPA de Vite.
-- `resolve.dedupe: ['preact']` evita dos instancias de Preact.
-- `optimizeDeps.include` con `preact/compat` es necesario para AryKit.
+- `appType: 'custom'` avoids Vite's SPA fallback.
+- `resolve.dedupe: ['preact']` avoids two Preact instances.
+- `optimizeDeps.include` with `preact/compat` is required for AryKit.
 
 ## CLI `create-tinyary`
 
@@ -367,12 +370,12 @@ pnpm dev
 
 ### Templates
 
-| Template | Qué muestra |
+| Template | What it shows |
 |---|---|
-| `bare` (default) | `routes/index.tsx` con un loader y un hola mundo. Sin islas ni AryKit. |
-| `global-state` | Dos islas comparten un átomo de `tinyary/arykit`; incluye `AryDevTools`. |
-| `server-state` | `useAryQuery` contra `/api/time`, refetch, invalidación y `AryDevTools`. |
-| `fullstack` | Todo list fullstack: 3 rutas (home, nosotros, contacto), todos en el servidor. |
+| `bare` (default) | `routes/index.tsx` with a loader and a hello world. No islands, no AryKit. |
+| `global-state` | Two islands share an atom from `tinyary/arykit`; includes `AryDevTools`. |
+| `server-state` | `useAryQuery` against `/api/time`, refetch, invalidation and `AryDevTools`. |
+| `fullstack` | Fullstack todo list: 3 routes (home, nosotros, contacto), todos on the server. |
 
 ```bash
 node .../bin.js mi-app --template global-state
@@ -380,27 +383,30 @@ node .../bin.js mi-app --template server-state
 node .../bin.js mi-app --template fullstack
 ```
 
-Sin `--template`, la CLI muestra un menú numerado y pregunta qué ejemplo querés.
-Acepta número, nombre o alias (`minimal` → `bare`). Enter vacío usa `bare`.
-Sin terminal interactiva (CI, pipes) no pregunta y usa el default.
+Without `--template` the CLI shows a numbered menu and asks which example you
+want. It accepts a number, a name or an alias (`minimal` → `bare`). Empty
+enter uses `bare`. With no interactive terminal (CI, pipes) it does not ask and
+uses the default.
 
-Todos incluyen `index.html`, `vite.config.ts`, `server.ts`, `tinyary.config.ts`,
-`styles/global.css` y un `AGENTS.md` en la raíz. El template `server-state` usa
-un Hono propio en `server.ts` para registrar la API antes de montar las páginas.
+Every template includes `index.html`, `vite.config.ts`, `server.ts`,
+`tinyary.config.ts`, `styles/global.css` and an `AGENTS.md` at the root. The
+`server-state` template uses its own Hono in `server.ts` to register the API
+before mounting the pages.
 
-El template apunta a este checkout con `link:<ruta absoluta>` (no publicado aún).
+The template points at this checkout with `link:<absolute path>` (not published
+yet).
 
-## Estructura del proyecto
+## Project structure
 
 ```text
-packages/tinyary/             núcleo, plugin de Vite y cliente
-packages/tinyary/src/arykit/  átomos, server state y DevTools
-packages/create-tinyary/      CLI y templates (bare, global-state, server-state, fullstack)
-examples/hello/               ejemplo con Vite e isla de contador
-scripts/smoke.mjs             validación end-to-end
+packages/tinyary/             core, Vite plugin and client
+packages/tinyary/src/arykit/  atoms, server state and DevTools
+packages/create-tinyary/      CLI and templates (bare, global-state, server-state, fullstack)
+examples/hello/               example with Vite and a counter island
+scripts/smoke.mjs             end-to-end validation
 ```
 
-## Tests, smoke y typecheck
+## Tests, smoke and typecheck
 
 ```bash
 pnpm test        # suite de Vitest
@@ -408,16 +414,16 @@ pnpm smoke       # levanta Vite y valida SSR, CSS, 404 y rutas
 pnpm -r exec tsc --noEmit
 ```
 
-El smoke arranca el ejemplo en un puerto libre, hace requests reales y apaga el
-grupo de procesos al terminar.
+The smoke starts the example on an ephemeral port, makes real requests and shuts
+down the process group when it finishes.
 
-## Tutorial: un todo list fullstack paso a paso
+## Tutorial: a fullstack todo list step by step
 
-Esta sección recorre la construcción de un ejemplo como el template `fullstack`,
-para que puedas experimentar y entender cada pieza. Vamos a crear una lista de
-tareas cuyos datos viven en el servidor.
+This section walks through building an example like the `fullstack` template, so
+you can experiment and understand each piece. We will build a task list whose
+data lives on the server.
 
-### 1. Arrancar desde `bare`
+### 1. Start from `bare`
 
 ```bash
 node packages/create-tinyary/bin.js mi-todo
@@ -426,10 +432,10 @@ pnpm install
 pnpm dev
 ```
 
-### 2. El store del servidor (`lib/todos.ts`)
+### 2. The server store (`lib/todos.ts`)
 
-Los todos viven en el servidor. Creamos un módulo con estado en memoria (en un
-proyecto real sería una base de datos).
+Todos live on the server. We create a module with in-memory state (in a real
+project it would be a database).
 
 ```ts
 // lib/todos.ts
@@ -461,11 +467,11 @@ export function deleteTodo(id: number): void {
 }
 ```
 
-> **Por qué en `lib/` y no en `routes/`**: `scanRoutes` sólo toma `index.tsx` y
-> `layout.tsx`. Un archivo en `lib/` no se convierte en ruta, pero se importa
-> normalmente desde las rutas.
+> **Why `lib/` and not `routes/`**: `scanRoutes` only takes `index.tsx` and
+> `layout.tsx`. A file in `lib/` does not become a route, but it is imported
+> normally from routes.
 
-### 3. La página home (`routes/index.tsx`)
+### 3. The home page (`routes/index.tsx`)
 
 ```tsx
 import { redirect } from 'tinyary'
@@ -533,7 +539,7 @@ export default function Home({ data }: PageProps<HomeData>) {
 }
 ```
 
-### 4. Layout compartido (`routes/layout.tsx`)
+### 4. Shared layout (`routes/layout.tsx`)
 
 ```tsx
 import type { ComponentChildren } from 'tinyary'
@@ -552,9 +558,9 @@ export default function RootLayout({ children }: { children?: ComponentChildren 
 }
 ```
 
-### 5. Página informativa (`routes/nosotros/index.tsx`)
+### 5. Informational page (`routes/nosotros/index.tsx`)
 
-Sin loader ni action: sólo JSX renderizado en el servidor.
+No loader or action: just JSX rendered on the server.
 
 ```tsx
 export default function Nosotros() {
@@ -567,9 +573,9 @@ export default function Nosotros() {
 }
 ```
 
-### 6. Formulario de contacto (`routes/contacto/index.tsx`)
+### 6. Contact form (`routes/contacto/index.tsx`)
 
-Demuestra otro uso de `action`: validar y devolver un `result` sin redirigir.
+Shows another use of `action`: validate and return a `result` without redirecting.
 
 ```tsx
 import type { ActionCtx, PageProps } from 'tinyary'
@@ -605,61 +611,60 @@ export default function Contacto({ result }: PageProps<{}, ContactResult>) {
 
 ### 7. CSS (`styles/global.css`)
 
-Vite sirve `styles/` como assets estáticos. Agregá estilos globales ahí.
+Vite serves `styles/` as static assets. Add global styles there.
 
-### 8. Probar
+### 8. Try it
 
 ```bash
 pnpm dev
 ```
 
-- `GET /` → SSR con la lista.
-- Agregar/borrar/marcar → POST → redirect → lista actualizada (sin reload
-  gracias a la navegación client-side).
-- `/nosotros` y `/contacto` → navegación sin reload.
-- El formulario de contacto muestra el mensaje de éxito sin recargar.
+- `GET /` → SSR with the list.
+- Add/toggle/delete → POST → redirect → list updated (no reload thanks to
+  client-side navigation).
+- `/nosotros` and `/contacto` → navigation without reload.
+- The contact form shows the success message without reloading.
 
-### 9. Experimentar
+### 9. Experiment
 
-Ideas para probar sobre la marcha:
+Ideas to try on the fly:
 
-- Agregá un campo `priority` al todo y mostralo en la lista.
-- Hacé que `/contacto` guarde los mensajes en el store (como los todos).
-- Agregá una ruta `/items/[id]` que muestre un todo individual.
-- Cambiá el store para que sea por usuario (keyeado por `ctx.user`).
-- Probá qué pasa si sacás el `redirect('/')` del action (el framework re-renderiza
-  con `result`).
-- Probá desactivar JS en el navegador: los forms siguen funcionando con full reload.
+- Add a `priority` field to the todo and show it in the list.
+- Make `/contacto` store messages (like the todos).
+- Add a `/items/[id]` route showing a single todo.
+- Make the store per-user (keyed by `ctx.user`).
+- Try removing `redirect('/')` from the action (the framework re-renders with
+  `result`).
+- Try disabling JS in the browser: forms still work with a full reload.
 
-## Navegación client-side
+## Client-side navigation
 
-Los links `<a>` del mismo origen se interceptan automáticamente: en lugar de un
-reload completo, se hace `fetch` del HTML, se extrae el payload
-`#__tinyary_data__` y se re-renderiza la página con `render` de Preact. La URL
-se actualiza con `history.pushState` y el botón atrás/adelante funciona.
+Same-origin `<a>` links are intercepted automatically: instead of a full reload,
+the HTML is fetched, the `#__tinyary_data__` payload is parsed, and the page is
+re-rendered with Preact's `render`. The URL is updated with `history.pushState`
+and back/forward works.
 
-- **Sin cambios en los componentes**: los `<a>` normales ya funcionan.
-- **Los formularios POST también se envían sin reload** (fetch + re-render).
-- **Loading state**: se agrega `data-navigating` al `<html>` y una barra de
-  progreso mínima (`#tinyary-progress`).
-- **Scroll**: va arriba en navegación nueva; restaura la posición con
+- **No component changes needed**: plain `<a>` already works.
+- **POST forms are also submitted without reload** (fetch + re-render).
+- **Loading state**: `data-navigating` is added to `<html>` plus a minimal
+  progress bar (`#tinyary-progress`).
+- **Scroll**: goes to the top on new navigation; restores position on
   back/forward.
-- **Fallback**: si el fetch falla o la ruta no matchea, se hace navegación
-  normal (full reload).
+- **Fallback**: if the fetch fails or the route does not match, a normal
+  navigation (full reload) is performed.
 
-Esto es la opción "fetch HTML" (reusa el SSR, sin endpoint de datos nuevo).
+This is the "fetch HTML" option (reuses SSR, no new data endpoint).
 
-## Pendiente
+## Pending
 
-- Cache conectado al `ctx` del request.
-- Sesión real con cookies firmadas.
-- Build de producción con manifest y assets hasheados.
-- Hidratación selectiva (hoy `island()` es sólo un marcador).
-- Publicar `tinyary` y `create-tinyary` en un registry.
+- Cache wired to `ctx` (today `cache.ts` is not wired to the server).
+- Real session with signed cookies.
+- Production build with manifest and hashed assets.
+- Selective hydration (today `island()` is only a marker).
+- Publish `tinyary` and `create-tinyary` to a registry.
 
 ## AGENTS.md
 
-Los proyectos generados por la CLI incluyen un `AGENTS.md` en la raíz con la
-guía del framework para agentes (estructura, reglas server/cliente, recetas,
-gotchas). Cualquier agente que abra el proyecto puede leerlo para entender cómo
-usarlo.
+Projects generated by the CLI include an `AGENTS.md` at the root with the
+framework guide for agents (structure, server/client rules, recipes, gotchas).
+Any agent opening the project can read it to understand how to use it.
