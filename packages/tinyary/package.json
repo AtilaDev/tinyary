@@ -4,7 +4,9 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
+    "./vite": "./src/vite.ts",
     "./server": "./src/server.ts",
+    "./client": "./src/client.ts",
     "./routes": "./src/routes.ts"
   },
   "scripts": {
@@ -15,5 +17,9 @@
     "hono": "^4.6.14",
     "preact": "^10.25.1",
     "preact-render-to-string": "^6.5.13"
+  },
+  "devDependencies": {
+    "@preact/preset-vite": "^2.10.6",
+    "vite": "^8.3.8"
   }
 }
