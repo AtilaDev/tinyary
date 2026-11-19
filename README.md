@@ -104,6 +104,42 @@ export { app, start } from 'virtual:tinyary/server-entry'
 
 El plugin arma el server real con `createServer` y lo monta como middleware después de los assets de Vite.
 
+## Estado e interactividad
+
+Toda la página se hidrata. `island()` hoy es sólo un marcador: no hace carga selectiva ni separa el bundle.
+
+### `useState`
+
+```tsx
+import { useState } from 'preact/hooks'
+
+function Counter() {
+  const [count, setCount] = useState(0)
+
+  return <button onClick={() => setCount((value) => value + 1)}>{count}</button>
+}
+```
+
+### Signals
+
+```tsx
+import { useSignal } from '@preact/signals'
+
+function Counter({ inicial }: { inicial: number }) {
+  const count = useSignal(inicial)
+
+  return <button onClick={() => count.value++}>{count}</button>
+}
+```
+
+Leer `count.value` en el JSX alcanza: el componente se suscribe y vuelve a renderizar. No hace falta configurar el transform de Babel.
+
+### Reglas
+
+- El estado no se serializa. El SSR pinta el estado inicial y el cliente arranca otra vez desde ese inicial; para continuar un valor del servidor, pasalo como prop desde el loader.
+- No uses signals a nivel de módulo para estado por request: en SSR ese módulo se comparte entre requests y filtra estado. Usá `useSignal` o datos del loader.
+- `useState` y `useSignal` conviven; elegí uno por componente.
+
 ## Convenciones de rutas
 
 - Sólo `index.tsx` define páginas.

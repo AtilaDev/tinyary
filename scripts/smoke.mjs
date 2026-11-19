@@ -86,6 +86,14 @@ try {
   check('GET /counter responde 200', counter.status === 200, `status ${counter.status}`)
   check('GET /counter incluye el botón server-side', counterHtml.includes('<button'))
 
+  const signals = await fetch(`${base}/signals`)
+  const signalsHtml = await signals.text()
+  check('GET /signals responde 200', signals.status === 200, `status ${signals.status}`)
+  check(
+    'GET /signals usa el valor del loader',
+    signalsHtml.includes('<strong>10</strong>'),
+  )
+
   check('GET / incluye el client-entry', homeHtml.includes('<script type="module"'))
 } catch (error) {
   failures++

@@ -5,6 +5,12 @@ import { tinyary } from 'tinyary/vite'
 export default defineConfig({
   plugins: [preact(), tinyary()],
   appType: 'custom',
+  resolve: {
+    dedupe: ['preact'],
+  },
+  optimizeDeps: {
+    include: ['preact', 'preact/hooks'],
+  },
   server: {
     port: Number(process.env.PORT ?? 3000),
   },
