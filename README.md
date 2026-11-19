@@ -55,8 +55,9 @@ navegador), pero no todo el código corre en ambos lados.
 | `loader` (por request) | `bootstrap` (hidratación) | Cuerpo del componente (JSX) |
 | `action` (en POST) | Hooks y signals | |
 | `session` (`tinyary.config.ts`) | Event handlers (`onClick`, …) | |
-| SSR render | AryKit en cliente | |
+| SSR render | | |
 | Endpoints Hono | | |
+| | | AryKit — Store en módulo, evaluado en ambos lados. En SSR el estado es el inicial (no se serializa); en el cliente persiste y se hidrata. |
 
 Consecuencias prácticas:
 
@@ -328,6 +329,7 @@ En el cliente, `tinyary/routes` se resuelve a una copia browser-safe de
 | `tinyary/vite` | plugin `tinyary()` | `vite.config.ts` |
 | `tinyary/client` | `bootstrap`, `island` | generado por el plugin |
 | `tinyary/client-routes` | `matchPattern` browser-safe | generado por el plugin |
+| `tinyary/routes` | `scanRoutes`, `matchPattern`, `matchRoute` | Server-side (`src/routes.ts`, importa `node:fs`). **No** es generado por el plugin. |
 | `tinyary/arykit` | átomos, queries, DevTools | opt-in |
 
 La raíz de `tinyary` es browser-safe: no arrastra `node:fs`.
