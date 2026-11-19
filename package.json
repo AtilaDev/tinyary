@@ -5,7 +5,8 @@
   "packageManager": "pnpm@10.20.0",
   "scripts": {
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "smoke": "node scripts/smoke.mjs"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",

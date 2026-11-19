@@ -111,10 +111,13 @@ export function createServer(options: ServerOptions): Hono {
         ...layoutModules.map((m) => (m.loader ? m.loader(ctx) : Promise.resolve(null))),
       ])
 
-      const data: Record<string, unknown> = {
-        page: pageData ?? null,
-        layouts: Object.fromEntries(match.layouts.map((l, i) => [l.file, layoutData[i] ?? null])),
-      }
+      // DECISIÓN: sólo los layouts con loader aportan datos, keyed por archivo,
+      // para que un layout sin loader no ensucie el payload de hidratación.
+      const data: Record<string, unknown> = { page: pageData ?? null }
+      match.layouts.forEach((layout, i) => {
+        const value = layoutData[i]
+        if (value !== null && value !== undefined) data[layout.file] = value
+      })
 
       const tree = render({
         page: match.page,

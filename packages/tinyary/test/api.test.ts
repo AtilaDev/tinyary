@@ -12,7 +12,7 @@ describe('loader', () => {
     const fn = vi.fn(async (ctx: RequestCtx) => ({ id: ctx.params.id }))
     const wrapped = loader(fn)
 
-    await expect(wrapped({ params: { id: '7' } } as RequestCtx)).resolves.toEqual({ id: '7' })
+    await expect(wrapped({ params: { id: '7' } } as unknown as RequestCtx)).resolves.toEqual({ id: '7' })
   })
 })
 
