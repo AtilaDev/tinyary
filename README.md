@@ -172,7 +172,23 @@ pnpm install
 pnpm dev
 ```
 
-Genera un proyecto con `index.html`, `vite.config.ts`, `server.ts`, `tinyary.config.ts`, layout y página inicial.
+Ese comando usa el template `example`, que muestra el flujo completo:
+
+- El loader corre en el servidor y el HTML llega completo.
+- El mensaje, la fecha y la lista son contenido estático del servidor.
+- Sólo la isla del contador se hidrata y cambia en el navegador.
+
+Para un proyecto limpio, con el scaffolding mínimo:
+
+```bash
+node /ruta/a/tinyary/packages/create-tinyary/bin.js demo --template minimal
+```
+
+`minimal` genera únicamente `routes/index.tsx`, sin layout ni isla. Ambos templates incluyen `index.html`, `vite.config.ts`, `server.ts`, `tinyary.config.ts` y `styles/global.css`.
+
+```bash
+node /ruta/a/tinyary/packages/create-tinyary/bin.js --help
+```
 
 El template apunta a este checkout con `link:<ruta absoluta>`, porque todavía no está publicado en un registry. Publicarlo queda fuera de esta etapa.
 

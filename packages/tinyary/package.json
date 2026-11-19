@@ -7,6 +7,7 @@
     "./vite": "./src/vite.ts",
     "./server": "./src/server.ts",
     "./client": "./src/client.ts",
+    "./client-routes": "./src/client-routes.ts",
     "./routes": "./src/routes.ts"
   },
   "scripts": {

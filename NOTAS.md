@@ -39,6 +39,16 @@ meterlas en scope.
 - **`cache.get` no deduplica llamadas concurrentes**; el spec no lo pide.
 - **500**: se loguea con `console.error` y el body es exactamente `"500"`.
 
+## CLI
+
+- **Dos templates**: `example` (default) y `minimal`. El CLI copia
+  `templates/<id>` y reemplaza `{{name}}`; se elige con `--template` / `-t`.
+- **`example` no hidrata sólo la isla**: el servidor renderiza la página
+  completa y el cliente hidrata el árbol; la isla es la única parte cuyo
+  estado cambia. Hidratación selectiva queda pendiente.
+- **El entry cliente importa `matchPattern` de `tinyary/client-routes`**, no de
+  la raíz, para que un proyecto sin islas no cargue signals ni hooks.
+
 ## Pendiente / ideas fuera de scope
 
 - Cache en `ctx` (hoy `cache.ts` no está cableado al server).

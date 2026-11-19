@@ -8,8 +8,8 @@ import { spawnSync } from 'node:child_process'
 const bin = fileURLToPath(new URL('../bin.js', import.meta.url))
 let cwd: string
 
-function run(name = 'demo') {
-  return spawnSync(process.execPath, [bin, name], { cwd, encoding: 'utf8' })
+function run(name = 'demo', args: string[] = []) {
+  return spawnSync(process.execPath, [bin, name, ...args], { cwd, encoding: 'utf8' })
 }
 
 beforeEach(() => {
@@ -21,7 +21,7 @@ afterEach(() => {
 })
 
 describe('create-tinyary', () => {
-  it('copia los archivos esenciales del template', () => {
+  it('copia los archivos esenciales del template por defecto', () => {
     const result = run()
 
     expect(result.status).toBe(0)
@@ -29,6 +29,40 @@ describe('create-tinyary', () => {
     expect(existsSync(join(cwd, 'demo/routes/index.tsx'))).toBe(true)
     expect(existsSync(join(cwd, 'demo/vite.config.ts'))).toBe(true)
     expect(existsSync(join(cwd, 'demo/server.ts'))).toBe(true)
+  })
+
+  it('usa el template example por defecto, con isla y layout', () => {
+    const result = run()
+
+    expect(result.status).toBe(0)
+    expect(result.stdout).toMatch(/template "example"/)
+    expect(existsSync(join(cwd, 'demo/routes/islands/counter.tsx'))).toBe(true)
+    expect(existsSync(join(cwd, 'demo/routes/layout.tsx'))).toBe(true)
+  })
+
+  it('genera un proyecto mínimo con --template minimal', () => {
+    const result = run('demo', ['--template', 'minimal'])
+
+    expect(result.status).toBe(0)
+    expect(result.stdout).toMatch(/template "minimal"/)
+    expect(existsSync(join(cwd, 'demo/routes/index.tsx'))).toBe(true)
+    expect(existsSync(join(cwd, 'demo/routes/islands/counter.tsx'))).toBe(false)
+    expect(existsSync(join(cwd, 'demo/routes/layout.tsx'))).toBe(false)
+  })
+
+  it('acepta --template=minimal', () => {
+    const result = run('demo', ['--template=minimal'])
+
+    expect(result.status).toBe(0)
+    expect(existsSync(join(cwd, 'demo/routes/islands/counter.tsx'))).toBe(false)
+  })
+
+  it('falla con un template desconocido', () => {
+    const result = run('demo', ['--template', 'otro'])
+
+    expect(result.status).toBe(1)
+    expect(result.stderr).toMatch(/template desconocido/i)
+    expect(result.stderr).toMatch(/example, minimal/)
   })
 
   it('reemplaza el nombre en package.json', () => {
@@ -60,5 +94,16 @@ describe('create-tinyary', () => {
 
     expect(result.status).toBe(1)
     expect(result.stderr).toMatch(/uso: create-tinyary <nombre>/i)
+    expect(result.stderr).toMatch(/example/)
+    expect(result.stderr).toMatch(/minimal/)
+  })
+
+  it('muestra la ayuda con --help', () => {
+    const result = spawnSync(process.execPath, [bin, '--help'], { cwd, encoding: 'utf8' })
+
+    expect(result.status).toBe(0)
+    expect(result.stdout).toMatch(/uso: create-tinyary/i)
+    expect(result.stdout).toMatch(/example/)
+    expect(result.stdout).toMatch(/minimal/)
   })
 })

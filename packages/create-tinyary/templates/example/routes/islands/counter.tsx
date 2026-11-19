@@ -4,12 +4,11 @@ function Counter() {
   const [count, setCount] = useState(0)
 
   return (
-    <section>
-      <p>
-        Valor: <strong>{count}</strong>
-      </p>
+    <section class="island">
+      <h2>Isla interactiva</h2>
+      <p>Esta es la única parte que se actualiza en el cliente.</p>
       <button type="button" onClick={() => setCount((value) => value + 1)}>
-        Incrementar
+        Clicks: {count}
       </button>
     </section>
   )

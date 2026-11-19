@@ -70,7 +70,7 @@ describe('generateClientEntry', () => {
   it('usa matchPattern para identificar la página actual', () => {
     const client = generateClientEntry(rutas)
 
-    expect(client).toContain("import { matchPattern } from 'tinyary'")
+    expect(client).toContain("import { matchPattern } from 'tinyary/client-routes'")
     expect(client).toContain('matchPattern(route.path, pathname)')
   })
 

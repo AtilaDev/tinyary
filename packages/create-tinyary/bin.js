@@ -4,10 +4,41 @@ import { cpSync, existsSync, readFileSync, readdirSync, writeFileSync } from 'no
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-const name = process.argv[2]
+const TEMPLATES = {
+  example: 'SSR con una isla interactiva',
+  minimal: 'proyecto limpio con scaffolding mínimo',
+}
+
+const DEFAULT_TEMPLATE = 'example'
+const args = process.argv.slice(2)
+
+if (args.includes('--help') || args.includes('-h')) {
+  printHelp()
+  process.exit(0)
+}
+const templateFlagIndex = args.findIndex((arg) => arg === '--template' || arg === '-t')
+const templateFromFlag =
+  templateFlagIndex === -1 ? undefined : args[templateFlagIndex + 1]
+const templateFromEquals = args
+  .find((arg) => arg.startsWith('--template='))
+  ?.slice('--template='.length)
+const template = templateFromEquals ?? templateFromFlag ?? DEFAULT_TEMPLATE
+
+const name = args.find((arg, index) => {
+  if (arg.startsWith('-')) return false
+  if (templateFlagIndex !== -1 && index === templateFlagIndex + 1) return false
+  return true
+})
 
 if (!name) {
-  console.error('Uso: create-tinyary <nombre>')
+  printHelp(console.error)
+  process.exit(1)
+}
+
+if (!(template in TEMPLATES)) {
+  console.error(
+    `Template desconocido: "${template}". Opciones: ${Object.keys(TEMPLATES).join(', ')}.`,
+  )
   process.exit(1)
 }
 
@@ -24,9 +55,8 @@ if (existsSync(destination)) {
   process.exit(1)
 }
 
-const templateDir = fileURLToPath(new URL('./template/', import.meta.url))
+const templateDir = fileURLToPath(new URL(`./templates/${template}/`, import.meta.url))
 const tinyaryDir = fileURLToPath(new URL('../tinyary/', import.meta.url))
-
 
 cpSync(templateDir, destination, { recursive: true })
 
@@ -40,14 +70,23 @@ for (const file of walk(destination)) {
 const packageFile = join(destination, 'package.json')
 const pkg = JSON.parse(readFileSync(packageFile, 'utf8'))
 // DECISIÓN: symlink local para que Node24 no seque a .pnpm con type stripping.
-// Publicar queda fuera de alcance.
 pkg.dependencies.tinyary = pkg.dependencies.tinyary.replace('%TINYARY_ROOT%', tinyaryDir)
 writeFileSync(packageFile, `${JSON.stringify(pkg, null, 2)}\n`)
 
-console.log(`\nCreé ${name}.\n\nPróximos pasos:\n`)
+console.log(`\nCreé ${name} con el template "${template}" (${TEMPLATES[template]}).\n`)
+console.log('Próximos pasos:\n')
 console.log(`  cd ${name}`)
 console.log('  pnpm install')
 console.log('  pnpm dev\n')
+
+function printHelp(log = console.log) {
+  log('Uso: create-tinyary <nombre> [--template example|minimal]\n')
+  log('Templates:')
+  for (const [id, description] of Object.entries(TEMPLATES)) {
+    const suffix = id === DEFAULT_TEMPLATE ? ' (default)' : ''
+    log(`  ${id.padEnd(8)} ${description}${suffix}`)
+  }
+}
 
 function* walk(dir) {
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
