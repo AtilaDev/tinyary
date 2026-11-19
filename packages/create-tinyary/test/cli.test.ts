@@ -34,6 +34,7 @@ describe('selección interactiva de template', () => {
     expect(resolveTemplateAnswer('1')).toBe('bare')
     expect(resolveTemplateAnswer('2')).toBe('global-state')
     expect(resolveTemplateAnswer('3')).toBe('server-state')
+    expect(resolveTemplateAnswer('4')).toBe('fullstack')
     expect(resolveTemplateAnswer(' 2 ')).toBe('global-state')
     expect(resolveTemplateAnswer('')).toBe(DEFAULT_TEMPLATE)
     expect(resolveTemplateAnswer('   ')).toBe(DEFAULT_TEMPLATE)
@@ -43,7 +44,7 @@ describe('selección interactiva de template', () => {
 
   it('devuelve null para números fuera de rango u opciones desconocidas', () => {
     expect(resolveTemplateAnswer('0')).toBeNull()
-    expect(resolveTemplateAnswer('4')).toBeNull()
+    expect(resolveTemplateAnswer('5')).toBeNull()
     expect(resolveTemplateAnswer('2.5')).toBeNull()
     expect(resolveTemplateAnswer('otro')).toBeNull()
   })
@@ -109,6 +110,30 @@ describe('create-tinyary', () => {
     expect(read('routes/index.tsx')).toContain('AryDevTools')
   })
 
+  it('genera el ejemplo fullstack con 3 rutas y todos en el servidor', () => {
+    const result = run('demo', ['--template', 'fullstack'])
+
+    expect(result.status).toBe(0)
+    expect(result.stdout).toMatch(/template "fullstack"/)
+    expect(existsSync(join(cwd, 'demo/routes/index.tsx'))).toBe(true)
+    expect(existsSync(join(cwd, 'demo/routes/nosotros/index.tsx'))).toBe(true)
+    expect(existsSync(join(cwd, 'demo/routes/contacto/index.tsx'))).toBe(true)
+    expect(existsSync(join(cwd, 'demo/routes/layout.tsx'))).toBe(true)
+    expect(existsSync(join(cwd, 'demo/lib/todos.ts'))).toBe(true)
+
+    const home = read('routes/index.tsx')
+    expect(home).toContain('listTodos')
+    expect(home).toContain('addTodo')
+    expect(home).toContain('redirect')
+
+    const todos = read('lib/todos.ts')
+    expect(todos).toContain('export function addTodo')
+
+    const contacto = read('routes/contacto/index.tsx')
+    expect(contacto).toContain('action')
+    expect(contacto).toContain('result')
+  })
+
   it('acepta --template=server-state', () => {
     const result = run('demo', ['--template=server-state'])
 
@@ -129,7 +154,7 @@ describe('create-tinyary', () => {
 
     expect(result.status).toBe(1)
     expect(result.stderr).toMatch(/template desconocido/i)
-    expect(result.stderr).toMatch(/bare, global-state, server-state/)
+    expect(result.stderr).toMatch(/bare, global-state, server-state, fullstack/)
   })
 
   it('reemplaza el nombre en package.json', () => {

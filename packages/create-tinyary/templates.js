@@ -2,6 +2,7 @@ export const TEMPLATES = {
   bare: 'hola mundo, sin AryKit ni código de relleno',
   'global-state': 'estado global con átomos y DevTools',
   'server-state': 'useAryQuery con caché, refetch y DevTools',
+  fullstack: 'todo list fullstack: 3 rutas (home, nosotros, contacto), todos en el servidor',
 }
 
 // Alias de compatibilidad: el template antes se llamaba "minimal".

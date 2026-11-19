@@ -204,23 +204,24 @@ export default function Home({ data }: PageProps<{ mensaje: string }>) {
 ### Tipado de loader/action
 
 ```ts
-import { loader, action, redirect, notFound } from 'tinyary'
+import type { ActionCtx, RequestCtx } from 'tinyary'
+import { redirect, notFound } from 'tinyary'
 
-export const loader = loader(async (ctx) => {
-  // ctx: { request, url, params, query, cookies, user }
+// Loader: función async que recibe RequestCtx.
+export const loader = async (ctx: RequestCtx) => {
   return { items: await db.list() }
-})
+}
 
-export const action = action(async (ctx) => {
-  // ctx.form es FormData
+// Action: función async que recibe ActionCtx (incluye form: FormData).
+export const action = async (ctx: ActionCtx) => {
   const name = ctx.form.get('name')
   if (!name) notFound()
   await db.create(String(name))
   redirect('/items')
-})
+}
 ```
 
-`loader()` y `action()` son **identidades tipadas**: no envuelven la función, sólo aportan inferencia. `redirect` y `notFound` lanzan control errors; no devuelven.
+TinyAry también exporta `loader()` y `action()` como **identidades tipadas**: no envuelven la función, sólo aportan inferencia. Son opcionales; si las usás, importalas con alias para evitar la colisión de nombres (`import { action as defineAction }`). `redirect` y `notFound` lanzan control errors; no devuelven.
 
 ### Ruta dinámica
 
@@ -241,14 +242,14 @@ export default function Item({ data, params }: PageProps) {
 
 ```tsx
 // routes/login/index.tsx
-import { action, redirect } from 'tinyary'
-import type { PageProps } from 'tinyary'
+import { redirect } from 'tinyary'
+import type { ActionCtx, PageProps } from 'tinyary'
 
-export const action = action(async ({ form }) => {
-  const email = form.get('email')
+export const action = async (ctx: ActionCtx) => {
+  const email = ctx.form.get('email')
   // ...validar...
   redirect('/dashboard')
-})
+}
 
 export default function Login({ result }: PageProps<{}, { error?: string }>) {
   return (
@@ -592,13 +593,13 @@ pnpm dev
 |---|---|
 | `bare` (default) | `routes/index.tsx` con un loader y un hola mundo. Sin islas ni AryKit. |
 | `global-state` | Dos islas comparten un átomo de `tinyary/arykit`; incluye `AryDevTools`. |
-| `server-state` | `useAryQuery` contra `/api/time`, refetch, invalidación y `AryDevTools`. |
+| `fullstack` | Todo list fullstack: 3 rutas (home, nosotros, contacto), todos en el servidor. |
 
 ```bash
 node .../bin.js mi-app --template global-state
 node .../bin.js mi-app --template server-state
 node .../bin.js mi-app -t server-state
-node .../bin.js mi-app --template=server-state
+node .../bin.js mi-app --template fullstack
 ```
 
 Sin `--template`, la CLI muestra un menú numerado y pregunta qué ejemplo querés:

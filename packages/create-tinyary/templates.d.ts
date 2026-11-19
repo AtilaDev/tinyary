@@ -1,4 +1,4 @@
-export type TemplateId = 'bare' | 'global-state' | 'server-state'
+export type TemplateId = 'bare' | 'global-state' | 'server-state' | 'fullstack'
 
 export declare const TEMPLATES: Record<TemplateId, string>
 export declare const ALIASES: Record<string, TemplateId>

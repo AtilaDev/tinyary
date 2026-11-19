@@ -41,8 +41,11 @@ meterlas en scope.
 
 ## CLI
 
-- **Tres templates**: `bare` (default), `global-state` y `server-state`.
-  `minimal` queda como alias de `bare` para no romper el comando anterior.
+- **Cuatro templates**: `bare` (default), `global-state`, `server-state` y
+  `fullstack`. `minimal` queda como alias de `bare`.
+- **`fullstack`**: todo list con 3 rutas (home, nosotros, contacto), store de
+  todos en memoria del servidor, formularios POST con action y PRG, y CSS
+  simple. Demuestra el ciclo completo fullstack.
 - **Sin `--template` el CLI pregunta**: muestra un menú numerado en terminal y
   acepta número, nombre o alias. Sin TTY (tests, CI, pipes) usa el default sin
   bloquear; la selección vive en `templates.js` y tiene tests unitarios.
