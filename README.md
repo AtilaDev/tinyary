@@ -413,6 +413,226 @@ pnpm -r exec tsc --noEmit
 El smoke arranca el ejemplo en un puerto libre, hace requests reales y apaga el
 grupo de procesos al terminar.
 
+## Tutorial: un todo list fullstack paso a paso
+
+Esta sección recorre la construcción de un ejemplo como el template `fullstack`,
+para que puedas experimentar y entender cada pieza. Vamos a crear una lista de
+tareas cuyos datos viven en el servidor.
+
+### 1. Arrancar desde `bare`
+
+```bash
+node packages/create-tinyary/bin.js mi-todo
+cd mi-todo
+pnpm install
+pnpm dev
+```
+
+### 2. El store del servidor (`lib/todos.ts`)
+
+Los todos viven en el servidor. Creamos un módulo con estado en memoria (en un
+proyecto real sería una base de datos).
+
+```ts
+// lib/todos.ts
+export type Todo = { id: number; text: string; done: boolean }
+
+let nextId = 1
+const todos: Todo[] = [
+  { id: nextId++, text: 'Leer el README', done: false },
+]
+
+export function listTodos(): Todo[] {
+  return todos.map((t) => ({ ...t }))
+}
+
+export function addTodo(text: string): Todo {
+  const todo = { id: nextId++, text, done: false }
+  todos.push(todo)
+  return { ...todo }
+}
+
+export function toggleTodo(id: number): void {
+  const t = todos.find((x) => x.id === id)
+  if (t) t.done = !t.done
+}
+
+export function deleteTodo(id: number): void {
+  const i = todos.findIndex((x) => x.id === id)
+  if (i !== -1) todos.splice(i, 1)
+}
+```
+
+> **Por qué en `lib/` y no en `routes/`**: `scanRoutes` sólo toma `index.tsx` y
+> `layout.tsx`. Un archivo en `lib/` no se convierte en ruta, pero se importa
+> normalmente desde las rutas.
+
+### 3. La página home (`routes/index.tsx`)
+
+```tsx
+import { redirect } from 'tinyary'
+import type { ActionCtx, PageProps, RequestCtx } from 'tinyary'
+import { addTodo, deleteTodo, listTodos, toggleTodo } from '../lib/todos'
+
+type HomeData = { todos: ReturnType<typeof listTodos> }
+
+// 1) LOADER: corre en el servidor en cada GET (y tras el redirect del action).
+export const loader = async (ctx: RequestCtx) => ({
+  todos: listTodos(),
+})
+
+// 2) ACTION: corre en el servidor en cada POST. Muta el store y redirige
+//    (patrón Post/Redirect/Get) para que el loader se re-ejecute.
+export const action = async (ctx: ActionCtx) => {
+  const intent = String(ctx.form.get('intent') ?? '')
+
+  if (intent === 'add') {
+    const text = String(ctx.form.get('text') ?? '').trim()
+    if (text) addTodo(text)
+  } else if (intent === 'toggle') {
+    toggleTodo(Number(ctx.form.get('id')))
+  } else if (intent === 'delete') {
+    deleteTodo(Number(ctx.form.get('id')))
+  }
+
+  redirect('/')
+}
+
+// 3) COMPONENTE: se renderiza en SSR y se hidrata. Usa `data` del loader.
+export default function Home({ data }: PageProps<HomeData>) {
+  return (
+    <section>
+      <h1>Lista de tareas</h1>
+
+      <form method="post" class="add-form">
+        <input type="hidden" name="intent" value="add" />
+        <input type="text" name="text" placeholder="¿Qué hay que hacer?" required />
+        <button type="submit">Agregar</button>
+      </form>
+
+      {data.todos.length === 0 ? (
+        <p>No hay tareas.</p>
+      ) : (
+        <ul>
+          {data.todos.map((todo) => (
+            <li key={todo.id} class={todo.done ? 'done' : ''}>
+              <form method="post" class="inline">
+                <input type="hidden" name="intent" value="toggle" />
+                <input type="hidden" name="id" value={todo.id} />
+                <button type="submit">{todo.done ? '✓' : '○'} {todo.text}</button>
+              </form>
+              <form method="post" class="inline">
+                <input type="hidden" name="intent" value="delete" />
+                <input type="hidden" name="id" value={todo.id} />
+                <button type="submit">✕</button>
+              </form>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  )
+}
+```
+
+### 4. Layout compartido (`routes/layout.tsx`)
+
+```tsx
+import type { ComponentChildren } from 'tinyary'
+
+export default function RootLayout({ children }: { children?: ComponentChildren }) {
+  return (
+    <div>
+      <nav>
+        <a href="/">Inicio</a>
+        <a href="/nosotros">Nosotros</a>
+        <a href="/contacto">Contacto</a>
+      </nav>
+      <main>{children}</main>
+    </div>
+  )
+}
+```
+
+### 5. Página informativa (`routes/nosotros/index.tsx`)
+
+Sin loader ni action: sólo JSX renderizado en el servidor.
+
+```tsx
+export default function Nosotros() {
+  return (
+    <section>
+      <h1>Nosotros</h1>
+      <p>TinyAry es un mini framework fullstack.</p>
+    </section>
+  )
+}
+```
+
+### 6. Formulario de contacto (`routes/contacto/index.tsx`)
+
+Demuestra otro uso de `action`: validar y devolver un `result` sin redirigir.
+
+```tsx
+import type { ActionCtx, PageProps } from 'tinyary'
+
+type ContactResult = { ok: true; name: string } | { error: string }
+
+export const action = async (ctx: ActionCtx): Promise<ContactResult> => {
+  const name = String(ctx.form.get('name') ?? '').trim()
+  const message = String(ctx.form.get('message') ?? '').trim()
+  if (!name) return { error: 'Ingresá tu nombre.' }
+  if (!message) return { error: 'Ingresá un mensaje.' }
+  return { ok: true, name }
+}
+
+export default function Contacto({ result }: PageProps<{}, ContactResult>) {
+  return (
+    <section>
+      <h1>Contacto</h1>
+      {result && 'ok' in result ? (
+        <p>¡Gracias, {result.name}!</p>
+      ) : (
+        <form method="post">
+          {result?.error && <p>{result.error}</p>}
+          <input name="name" required />
+          <textarea name="message" required />
+          <button type="submit">Enviar</button>
+        </form>
+      )}
+    </section>
+  )
+}
+```
+
+### 7. CSS (`styles/global.css`)
+
+Vite sirve `styles/` como assets estáticos. Agregá estilos globales ahí.
+
+### 8. Probar
+
+```bash
+pnpm dev
+```
+
+- `GET /` → SSR con la lista.
+- Agregar/borrar/marcar → POST → redirect → lista actualizada (sin reload
+  gracias a la navegación client-side).
+- `/nosotros` y `/contacto` → navegación sin reload.
+- El formulario de contacto muestra el mensaje de éxito sin recargar.
+
+### 9. Experimentar
+
+Ideas para probar sobre la marcha:
+
+- Agregá un campo `priority` al todo y mostralo en la lista.
+- Hacé que `/contacto` guarde los mensajes en el store (como los todos).
+- Agregá una ruta `/items/[id]` que muestre un todo individual.
+- Cambiá el store para que sea por usuario (keyeado por `ctx.user`).
+- Probá qué pasa si sacás el `redirect('/')` del action (el framework re-renderiza
+  con `result`).
+- Probá desactivar JS en el navegador: los forms siguen funcionando con full reload.
+
 ## Navegación client-side
 
 Los links `<a>` del mismo origen se interceptan automáticamente: en lugar de un
@@ -421,7 +641,7 @@ reload completo, se hace `fetch` del HTML, se extrae el payload
 se actualiza con `history.pushState` y el botón atrás/adelante funciona.
 
 - **Sin cambios en los componentes**: los `<a>` normales ya funcionan.
-- **Los formularios POST siguen haciendo full reload** (más simple y robusto).
+- **Los formularios POST también se envían sin reload** (fetch + re-render).
 - **Loading state**: se agrega `data-navigating` al `<html>` y una barra de
   progreso mínima (`#tinyary-progress`).
 - **Scroll**: va arriba en navegación nueva; restaura la posición con
@@ -430,6 +650,10 @@ se actualiza con `history.pushState` y el botón atrás/adelante funciona.
   normal (full reload).
 
 Esto es la opción "fetch HTML" (reusa el SSR, sin endpoint de datos nuevo).
+
+## Pendiente
+
+- Cache conectado al `ctx` del request.
 - Sesión real con cookies firmadas.
 - Build de producción con manifest y assets hasheados.
 - Hidratación selectiva (hoy `island()` es sólo un marcador).
