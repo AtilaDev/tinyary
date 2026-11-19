@@ -47,4 +47,4 @@ project by default.
 This project uses TinyAry. For the full framework documentation, read the
 `README.md` in the TinyAry repository. Do not try to reimplement the framework;
 use its API. The framework code is frozen during development; use the documented
-exports.
+exports. Tests use Vitest; import primitives and helpers from `tinyary/testing`.

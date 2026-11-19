@@ -358,6 +358,49 @@ export default defineConfig({
 - `resolve.dedupe: ['preact']` evita dos instancias de Preact.
 - `optimizeDeps.include` con `preact/compat` es necesario para AryKit.
 
+## Probando tu app
+
+TinyAry incluye un subpath `tinyary/testing` para probar rutas y SSR con
+Vitest sin cablear Hono a mano:
+
+```ts
+// routes/index.test.ts
+import { describe, it, expect } from 'vitest'
+import { createTestApp, fetchApp } from 'tinyary/testing'
+
+const routes = [{ path: '/', file: 'index.tsx', type: 'page', dir: '' }]
+
+describe('home', () => {
+  it('renderiza los datos del loader', async () => {
+    const { app } = createTestApp({
+      routes,
+      modules: {
+        'index.tsx': {
+          default: () => null,
+          loader: async () => ({ mensaje: 'hola' }),
+        },
+      },
+    })
+    const { status, text } = await fetchApp(app, '/')
+    expect(status).toBe(200)
+    expect(text).toContain('"mensaje":"hola"')
+  })
+})
+```
+
+- `createTestApp({ routes, modules })` arma una app Hono en memoria a partir de
+  un manifest de rutas + un mapa de módulos (mockeando `loadModule`).
+- `fetchApp(app, path, init?)` hace fetch a un path y devuelve
+  `{ res, text, status }`.
+- Las primitivas de Vitest (`describe`, `it`, `expect`, `vi`, …) vienen de
+  `vitest` directamente; `tinyary/testing` sólo provee los helpers para armar
+  la app, así no hay problema de identidad de módulo en dev (donde `tinyary`
+  está linkeado).
+
+Los proyectos generados incluyen `vitest` como devDependency, así que `pnpm test`
+funciona apenas agregás un archivo `*.test.ts`. Agregá un script `test` en
+`package.json` si querés que `pnpm test` lo ejecute.
+
 ## CLI `create-tinyary`
 
 ```bash

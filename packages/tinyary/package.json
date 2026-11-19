@@ -9,7 +9,8 @@
     "./server": "./src/server.ts",
     "./client": "./src/client.ts",
     "./client-routes": "./src/client-routes.ts",
-    "./routes": "./src/routes.ts"
+    "./routes": "./src/routes.ts",
+    "./testing": "./src/testing.ts"
   },
   "scripts": {
     "test": "vitest run"
@@ -21,11 +22,16 @@
     "preact-render-to-string": "^6.5.13"
   },
   "peerDependencies": {
-    "preact": "^10.25.1"
+    "preact": "^10.25.1",
+    "vitest": "^2.0.0"
+  },
+  "peerDependenciesMeta": {
+    "vitest": { "optional": true }
   },
   "devDependencies": {
     "@preact/preset-vite": "^2.10.6",
     "preact": "^10.25.1",
-    "vite": "^8.3.8"
+    "vite": "^8.3.8",
+    "vitest": "^2.1.8"
   }
 }

@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [preact(), tinyary()],
   appType: 'custom',
   resolve: {
-    dedupe: ['preact'],
+    dedupe: ['preact', 'vitest'],
   },
   optimizeDeps: {
     include: ['preact', 'preact/hooks', 'preact/compat'],
