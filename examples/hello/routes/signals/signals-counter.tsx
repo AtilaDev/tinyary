@@ -1,5 +1,4 @@
-import { useSignal } from '@preact/signals'
-import { island } from 'tinyary/client'
+import { island, useSignal } from 'tinyary'
 
 function SignalsCounter({ inicial }: { inicial: number }) {
   const count = useSignal(inicial)

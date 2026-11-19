@@ -146,3 +146,9 @@ export function createServer(options: ServerOptions): Hono {
 
   return app
 }
+
+// Utilidades server-only. No salen desde la raíz para no arrastrar node:fs ni
+// preact-render-to-string al navegador.
+export { createCache } from './cache'
+export { scanRoutes, matchPattern, matchRoute } from './routes'
+export { renderSSR, serializeData, injectData } from './render'

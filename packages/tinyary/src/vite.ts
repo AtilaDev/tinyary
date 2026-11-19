@@ -1,5 +1,4 @@
 import { existsSync } from 'node:fs'
-import { fileURLToPath } from 'node:url'
 import { join } from 'node:path'
 import type { Plugin, ViteDevServer } from 'vite'
 import type { IncomingMessage, ServerResponse } from 'node:http'
@@ -80,19 +79,6 @@ export function tinyary(): Plugin {
 
   return {
     name: 'tinyary',
-
-    config() {
-      return {
-        resolve: {
-          alias: [
-            {
-              find: /^tinyary\/routes$/,
-              replacement: fileURLToPath(new URL('./client-routes.ts', import.meta.url)),
-            },
-          ],
-        },
-      }
-    },
 
     configResolved(config) {
       routesDir = join(config.root, 'routes')

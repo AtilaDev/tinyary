@@ -93,7 +93,7 @@ export function generateClientEntry(routes: RouteEntry[]): string {
   return `/* generado por tinyary — no editar */
 import { h } from 'preact'
 import { bootstrap } from 'tinyary/client'
-import { matchPattern } from 'tinyary/routes'
+import { matchPattern } from 'tinyary'
 import { routes } from 'virtual:tinyary/routes'
 import { components } from 'virtual:tinyary/components'
 

@@ -32,11 +32,36 @@ export function notFound(): never {
   throw controlError('TINYARY_NOT_FOUND')
 }
 
-export { createCache } from './cache'
-export { scanRoutes, matchPattern, matchRoute } from './routes'
-export { renderSSR, serializeData, injectData } from './render'
 export type { Params, RequestCtx, ActionCtx, LoaderResult, PageProps } from './types'
 
-// Reexport type-only: el runtime de Preact sigue siendo el del proyecto. Así los
-// layouts no necesitan importar de 'preact' para tipar children.
+// Superficie universal (browser-safe). Lo server-only (cache, scanRoutes,
+// renderSSR) vive en tinyary/server, porque routes.ts importa node:fs.
 export type { ComponentChildren } from 'preact'
+
+export {
+  useState,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useCallback,
+  useReducer,
+  useContext,
+  useId,
+} from 'preact/hooks'
+
+export {
+  signal,
+  computed,
+  effect,
+  batch,
+  untracked,
+  useSignal,
+  useComputed,
+  useSignalEffect,
+} from '@preact/signals'
+
+export type { Signal } from '@preact/signals'
+
+export { island } from './client'
+export { matchPattern } from './client-routes'

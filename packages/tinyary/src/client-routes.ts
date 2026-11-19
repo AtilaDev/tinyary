@@ -1,8 +1,7 @@
 import type { Params } from './types'
 
-// DECISIÓN: copia browser-safe del helper puro. tinyary/routes importa node:fs
-// para scanRoutes; separarlo del núcleo permitiría reutilizarlo, pero el núcleo
-// de rutas está fuera de alcance en esta etapa. El plugin sólo la usa en cliente.
+// Copia browser-safe del helper puro. routes.ts importa node:fs para
+// scanRoutes, así que la raíz de tinyary reexporta sólo esto al navegador.
 export function matchPattern(pattern: string, pathname: string): Params | null {
   const patternSegments = pattern.split('/').filter(Boolean)
   const pathSegments = pathname.split('/').filter(Boolean)

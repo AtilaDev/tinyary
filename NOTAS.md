@@ -5,6 +5,16 @@ meterlas en scope.
 
 ## Núcleo
 
+- **La raíz de `tinyary` es browser-safe.** `createCache`, `scanRoutes`,
+  `matchRoute` y `renderSSR` se exportan desde `tinyary/server`; la raíz
+  reexporta hooks, signals, `island` y `matchPattern` (copia sin `node:fs`).
+  Así `import { useState } from 'tinyary'` no arrastra builtins al navegador.
+- **`preact` es peer dependency** de `tinyary`. La app lo instala y lo
+  deduplica con `resolve.dedupe: ['preact']`; si no, el paquete con peer de
+  `preact-render-to-string` puede resolverse como una segunda instancia.
+- **`@preact/signals` es dependency de `tinyary`** y se reexporta desde la
+  raíz. La app no necesita instalarlo ni importarlo directamente.
+
 - **`nope.tsx` no es ruteable.** El spec pedía 4 pages + pattern `/nope`, y a la
   vez `matchRoute('/nope') === null`. Se eligió la convención estándar: sólo
   `index.tsx` define pages. Quedan 3 pages (`/`, `/listings`, `/listings/:id`).

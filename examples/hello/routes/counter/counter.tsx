@@ -1,5 +1,4 @@
-import { useState } from 'preact/hooks'
-import { island } from 'tinyary/client'
+import { island, useState } from 'tinyary'
 
 function Counter() {
   const [count, setCount] = useState(0)

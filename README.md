@@ -31,8 +31,7 @@ export default function Home({ data }: PageProps<{ mensaje: string }>) {
 
 ```tsx
 // routes/counter/counter.tsx
-import { useState } from 'preact/hooks'
-import { island } from 'tinyary/client'
+import { island, useState } from 'tinyary'
 
 function Counter() {
   const [count, setCount] = useState(0)
@@ -111,7 +110,7 @@ Toda la página se hidrata. `island()` hoy es sólo un marcador: no hace carga s
 ### `useState`
 
 ```tsx
-import { useState } from 'preact/hooks'
+import { useState } from 'tinyary'
 
 function Counter() {
   const [count, setCount] = useState(0)
@@ -123,7 +122,7 @@ function Counter() {
 ### Signals
 
 ```tsx
-import { useSignal } from '@preact/signals'
+import { useSignal } from 'tinyary'
 
 function Counter({ inicial }: { inicial: number }) {
   const count = useSignal(inicial)
@@ -133,6 +132,8 @@ function Counter({ inicial }: { inicial: number }) {
 ```
 
 Leer `count.value` en el JSX alcanza: el componente se suscribe y vuelve a renderizar. No hace falta configurar el transform de Babel.
+
+Hooks, signals, `island` y los tipos se importan todos desde `tinyary`. `preact` es peer dependency y la app lo deduplica; el template ya trae `resolve.dedupe: ['preact']` para que exista una sola instancia.
 
 ### Reglas
 

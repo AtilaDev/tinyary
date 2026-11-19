@@ -5,6 +5,7 @@ export default function Layout({ children }: { children?: ComponentChildren }) {
     <>
       <nav>
         <a href="/">Inicio</a>
+        <a href="/counter">Contador</a>
       </nav>
       {children}
     </>
