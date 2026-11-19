@@ -72,6 +72,7 @@ describe('create-tinyary', () => {
     expect(existsSync(join(cwd, 'demo/package.json'))).toBe(true)
     expect(existsSync(join(cwd, 'demo/routes/index.tsx'))).toBe(true)
     expect(existsSync(join(cwd, 'demo/vite.config.ts'))).toBe(true)
+    expect(existsSync(join(cwd, 'demo/AGENTS.md'))).toBe(true)
     expect(existsSync(join(cwd, 'demo/server.ts'))).toBe(true)
     expect(existsSync(join(cwd, 'demo/routes/islands'))).toBe(false)
     expect(existsSync(join(cwd, 'demo/routes/layout.tsx'))).toBe(false)
