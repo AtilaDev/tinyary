@@ -35,7 +35,7 @@ describe('bootstrap', () => {
 
     bootstrap({ root, render })
 
-    expect(render).toHaveBeenCalledWith({ page: { mensaje: 'Hola' } }, { id: '42' })
+    expect(render).toHaveBeenCalledWith({ page: { mensaje: 'Hola' } }, { id: '42' }, null)
     expect(hydrate).toHaveBeenCalledWith(vnode, root)
   })
 

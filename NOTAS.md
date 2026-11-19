@@ -84,10 +84,25 @@ meterlas en scope.
 - **La carpeta `arykit/` de la raíz no se tocó.** Es un repo git aparte; la
   copia integrada es la de `packages/tinyary/src/arykit`.
 
-## Pendiente / ideas fuera de scope
+## Navegación client-side (feat/client-navigation)
+
+- **Opción A (fetch HTML)**: se interceptan los `<a>` del mismo origen, se hace
+  `fetch` del HTML completo, se parsea `#__tinyary_data__` y se re-renderiza con
+  `render` de Preact (desmontar + montar). Reusa el SSR, sin endpoint de datos
+  nuevo.
+- **`bootstrap` ahora pasa `result`** al render callback (tercer argumento), para
+  que la hidratación inicial no pierda el `result` del action.
+- **`render` de Preact** se importa en el client-entry para re-renderizar.
+- **Helpers nuevos en `client-routes.ts`**: `matchRouteClient`, `parseDataScript`,
+  `parseTitle`, `shouldInterceptLink`. Con tests unitarios.
+- **Fallback graceful**: si el fetch falla o la ruta no matchea, se hace
+  navegación normal (full reload).
+- **Formularios POST siguen haciendo full reload** (más simple y robusto).
+- **Loading state**: `data-navigating` en `<html>` + barra `#tinyary-progress`.
+- **Scroll**: arriba en navegación nueva; restaura posición en back/forward.
+- **No se rompió SSR**: smoke (16 checks) y 119 tests siguen verdes.
 
 - Cache en `ctx` (hoy `cache.ts` no está cableado al server).
 - Session real con cookies firmadas.
-- Navegación cliente.
 - Deduplicación de cache para requests concurrentes del mismo key.
 - Logger configurable en `createServer`.

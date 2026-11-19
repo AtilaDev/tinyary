@@ -389,7 +389,16 @@ página se hidrata igual; la carga selectiva queda para otra etapa.
 - **Agregar un endpoint JSON**: registrar en `server.ts` antes de `app.route('/', pages)`.
 - **Cambiar estilos**: editar `styles/global.css` (se sirve como asset estático).
 
-## Gotchas
+## Navegación client-side
+
+Los `<a>` del mismo origen se interceptan automáticamente: en lugar de un
+reload completo, se hace `fetch` del HTML, se extrae `#__tinyary_data__` y se
+re-renderiza la página. La URL se actualiza con `history.pushState` y
+back/forward funciona.
+
+- Los formularios POST siguen haciendo full reload.
+- Si el fetch falla o la ruta no matchea, se hace navegación normal.
+- No hace falta usar un componente especial: los `<a>` normales ya funcionan.
 
 - No uses `Math.random()`/`Date.now()` en el cuerpo del componente sin
   guardarlo: rompe la hidratación.

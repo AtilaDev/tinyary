@@ -413,10 +413,23 @@ pnpm -r exec tsc --noEmit
 El smoke arranca el ejemplo en un puerto libre, hace requests reales y apaga el
 grupo de procesos al terminar.
 
-## Pendiente
+## Navegación client-side
 
-- Navegación cliente sin recarga.
-- Cache conectado al `ctx` del request.
+Los links `<a>` del mismo origen se interceptan automáticamente: en lugar de un
+reload completo, se hace `fetch` del HTML, se extrae el payload
+`#__tinyary_data__` y se re-renderiza la página con `render` de Preact. La URL
+se actualiza con `history.pushState` y el botón atrás/adelante funciona.
+
+- **Sin cambios en los componentes**: los `<a>` normales ya funcionan.
+- **Los formularios POST siguen haciendo full reload** (más simple y robusto).
+- **Loading state**: se agrega `data-navigating` al `<html>` y una barra de
+  progreso mínima (`#tinyary-progress`).
+- **Scroll**: va arriba en navegación nueva; restaura la posición con
+  back/forward.
+- **Fallback**: si el fetch falla o la ruta no matchea, se hace navegación
+  normal (full reload).
+
+Esto es la opción "fetch HTML" (reusa el SSR, sin endpoint de datos nuevo).
 - Sesión real con cookies firmadas.
 - Build de producción con manifest y assets hasheados.
 - Hidratación selectiva (hoy `island()` es sólo un marcador).

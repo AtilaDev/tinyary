@@ -4,7 +4,7 @@ import type { Params } from './types'
 
 export interface BootstrapOptions {
   root: HTMLElement
-  render: (data: Record<string, unknown>, params: Params) => VNode
+  render: (data: Record<string, unknown>, params: Params, result?: unknown) => VNode
 }
 
 /** Hidrata la página SSR con el payload insertado por injectData. */
@@ -18,9 +18,10 @@ export function bootstrap({ root, render }: BootstrapOptions): void {
   const payload = JSON.parse(script.textContent ?? '{}') as {
     data: Record<string, unknown>
     params: Params
+    result?: unknown
   }
 
-  hydrate(render(payload.data, payload.params), root)
+  hydrate(render(payload.data, payload.params, payload.result ?? null), root)
 }
 
 /** Marca un componente interactivo. La carga selectiva queda para otra etapa. */
