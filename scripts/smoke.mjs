@@ -6,8 +6,12 @@ import { once } from 'node:events'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const helloDir = join(root, 'examples/hello')
-const PORT = 3456
-const base = `http://localhost:${PORT}`
+
+// DECISIÓN: puerto efímero (0) para que dos corridas seguidas no choquen.
+// El puerto real se parsea del output de Vite ("Local: http://host:PORT/"),
+// con fallback al mensaje "tinyary en http://localhost:PORT" del server.
+let port = null
+let base = ''
 
 let failures = 0
 
@@ -20,25 +24,45 @@ function check(name, condition, detail = '') {
   }
 }
 
+function tryParsePort() {
+  if (port) return
+  const match =
+    serverLog.match(/Local:\s+https?:\/\/[^/\s]+:(\d+)/) ||
+    serverLog.match(/tinyary en http:\/\/localhost:(\d+)/)
+  if (match) {
+    port = Number(match[1])
+    base = `http://localhost:${port}`
+  }
+}
+
 const server = spawn('pnpm', ['exec', 'vite', '--host', '127.0.0.1'], {
   cwd: helloDir,
-  env: { ...process.env, PORT: String(PORT) },
+  env: { ...process.env, PORT: '0' },
   stdio: ['ignore', 'pipe', 'pipe'],
   detached: process.platform !== 'win32',
 })
 
 let serverLog = ''
-server.stdout.on('data', (chunk) => (serverLog += chunk))
-server.stderr.on('data', (chunk) => (serverLog += chunk))
+server.stdout.on('data', (chunk) => {
+  serverLog += chunk
+  tryParsePort()
+})
+server.stderr.on('data', (chunk) => {
+  serverLog += chunk
+  tryParsePort()
+})
 
 async function waitForServer() {
   for (let i = 0; i < 100; i++) {
     if (server.exitCode !== null) break
-    try {
-      const res = await fetch(`${base}/`)
-      if (res.ok) return
-    } catch {
-      // todavía no levantó
+    tryParsePort()
+    if (port) {
+      try {
+        const res = await fetch(`${base}/`)
+        if (res.ok) return
+      } catch {
+        // todavía no levantó
+      }
     }
     await sleep(100)
   }
