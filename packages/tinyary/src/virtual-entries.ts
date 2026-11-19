@@ -185,6 +185,61 @@ document.addEventListener('click', (event) => {
   navigate(url.pathname + url.search)
 })
 
+document.addEventListener('submit', async (event) => {
+  if (event.defaultPrevented) return
+  const form = event.target
+  if (!(form instanceof HTMLFormElement)) return
+
+  const method = (form.method || 'get').toLowerCase()
+  if (method !== 'get' && method !== 'post') return
+  if (form.querySelector('input[type="file"]')) return
+
+  const actionAttr = form.getAttribute('action') || location.pathname
+  let url
+  try { url = new URL(actionAttr, location.origin) } catch { return }
+  if (url.origin !== location.origin) return
+
+  event.preventDefault()
+
+  if (method === 'get') {
+    const params = new URLSearchParams(new FormData(form))
+    navigate(url.pathname + '?' + params.toString())
+    return
+  }
+
+  if (navigating) return
+  navigating = true
+  document.documentElement.dataset.navigating = '1'
+
+  try {
+    const body = new FormData(form)
+    const res = await fetch(url.pathname + url.search, { method: 'POST', body })
+    if (!res.ok) { form.submit(); return }
+
+    const html = await res.text()
+    const parsed = parseDataScript(html)
+    if (!parsed) { form.submit(); return }
+
+    const title = parseTitle(html)
+    if (title) document.title = title
+
+    const finalPath = res.redirected ? new URL(res.url).pathname : (url.pathname + url.search)
+    const ok = renderPage(finalPath, parsed)
+    if (!ok) { form.submit(); return }
+
+    if (res.redirected) {
+      try { history.pushState({ path: finalPath, scrollY: window.scrollY }, '', finalPath) } catch {}
+    }
+
+    window.scrollTo(0, 0)
+  } catch (error) {
+    form.submit()
+  } finally {
+    navigating = false
+    delete document.documentElement.dataset.navigating
+  }
+})
+
 window.addEventListener('popstate', () => {
   navigate(location.pathname + location.search, false)
 })
