@@ -2,6 +2,7 @@ import { spawn } from 'node:child_process'
 import { setTimeout as sleep } from 'node:timers/promises'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
+import { once } from 'node:events'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const helloDir = join(root, 'examples/hello')
@@ -19,10 +20,11 @@ function check(name, condition, detail = '') {
   }
 }
 
-const server = spawn('pnpm', ['exec', 'tsx', 'server.ts'], {
+const server = spawn('pnpm', ['exec', 'vite', '--host', '127.0.0.1'], {
   cwd: helloDir,
   env: { ...process.env, PORT: String(PORT) },
   stdio: ['ignore', 'pipe', 'pipe'],
+  detached: process.platform !== 'win32',
 })
 
 let serverLog = ''
@@ -64,7 +66,11 @@ try {
   check('el JSON de datos es parseable', payload !== null)
   check('el payload incluye data.page.mensaje', typeof payload?.data?.page?.mensaje === 'string')
 
-  const css = await fetch(`${base}/styles/global.css`)
+  // Simular el request de <link rel="stylesheet"> para que Vite no lo
+  // transforme en un módulo JS (comportamiento para import CSS).
+  const css = await fetch(`${base}/styles/global.css`, {
+    headers: { accept: 'text/css,*/*;q=0.1' },
+  })
   check('GET /styles/global.css responde 200', css.status === 200, `status ${css.status}`)
   check(
     'el CSS se sirve como text/css',
@@ -74,11 +80,28 @@ try {
 
   const nope = await fetch(`${base}/nope`)
   check('GET /nope responde 404', nope.status === 404, `status ${nope.status}`)
+
+  const counter = await fetch(`${base}/counter`)
+  const counterHtml = await counter.text()
+  check('GET /counter responde 200', counter.status === 200, `status ${counter.status}`)
+  check('GET /counter incluye el botón server-side', counterHtml.includes('<button'))
+
+  check('GET / incluye el client-entry', homeHtml.includes('<script type="module"'))
 } catch (error) {
   failures++
   console.error(`✗ smoke abortado: ${error.message}`)
 } finally {
-  server.kill('SIGTERM')
+  // Detener también al proceso Vite hijo de pnpm, no sólo al wrapper.
+  if (server.pid && process.platform !== 'win32') {
+    try {
+      process.kill(-server.pid, 'SIGTERM')
+    } catch {
+      server.kill('SIGTERM')
+    }
+  } else {
+    server.kill('SIGTERM')
+  }
+  await Promise.race([once(server, 'exit'), sleep(2000)])
 }
 
 if (failures > 0) {
