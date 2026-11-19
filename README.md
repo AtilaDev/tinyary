@@ -111,6 +111,7 @@ El plugin arma el server real con `createServer` y lo monta como middleware desp
 - Un `layout.tsx` aplica a los descendientes de su carpeta, no al `index.tsx` de esa misma carpeta.
 - El `layout.tsx` de la raíz aplica a todas las páginas.
 - El loader se exporta como `loader`; el action de un POST, como `action`.
+- Los tipos de Preact que necesita una app (`ComponentChildren`) se reexportan desde `tinyary`. El runtime y los hooks siguen viniendo de `preact`, para no duplicar la instancia.
 
 ## Virtual modules
 

@@ -1,4 +1,4 @@
-import type { ComponentChildren } from 'preact'
+import type { ComponentChildren } from 'tinyary'
 
 export default function Layout({ children }: { children?: ComponentChildren }) {
   return (

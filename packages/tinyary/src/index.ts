@@ -36,3 +36,7 @@ export { createCache } from './cache'
 export { scanRoutes, matchPattern, matchRoute } from './routes'
 export { renderSSR, serializeData, injectData } from './render'
 export type { Params, RequestCtx, ActionCtx, LoaderResult, PageProps } from './types'
+
+// Reexport type-only: el runtime de Preact sigue siendo el del proyecto. Así los
+// layouts no necesitan importar de 'preact' para tipar children.
+export type { ComponentChildren } from 'preact'
