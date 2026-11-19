@@ -201,19 +201,24 @@ pnpm install
 pnpm dev
 ```
 
-Ese comando usa el template `example`, que muestra el flujo completo:
+El template por defecto es `bare`: un hola mundo con loader, sin islas ni AryKit.
 
-- El loader corre en el servidor y el HTML llega completo.
-- El mensaje, la fecha y la lista son contenido estático del servidor.
-- Sólo la isla del contador se hidrata y cambia en el navegador.
+Templates disponibles:
 
-Para un proyecto limpio, con el scaffolding mínimo:
+| Template | Qué muestra |
+|---|---|
+| `bare` (default) | `routes/index.tsx` con un loader y un hola mundo. Sin islas ni AryKit. |
+| `global-state` | Dos islas comparten un átomo de `tinyary/arykit`; incluye `AryDevTools`. |
+| `server-state` | `useAryQuery` contra `/api/time`, refetch, invalidación y `AryDevTools`. |
 
 ```bash
-node /ruta/a/tinyary/packages/create-tinyary/bin.js demo --template minimal
+node /ruta/a/tinyary/packages/create-tinyary/bin.js demo --template global-state
+node /ruta/a/tinyary/packages/create-tinyary/bin.js demo --template server-state
 ```
 
-`minimal` genera únicamente `routes/index.tsx`, sin layout ni isla. Ambos templates incluyen `index.html`, `vite.config.ts`, `server.ts`, `tinyary.config.ts` y `styles/global.css`.
+`minimal` sigue funcionando como alias de `bare`.
+
+Todos incluyen `index.html`, `vite.config.ts`, `server.ts`, `tinyary.config.ts` y `styles/global.css`. El template `server-state` usa un Hono propio en `server.ts` para registrar `/api/time` antes de montar las páginas.
 
 ```bash
 node /ruta/a/tinyary/packages/create-tinyary/bin.js --help
@@ -226,7 +231,7 @@ El template apunta a este checkout con `link:<ruta absoluta>`, porque todavía n
 ```text
 packages/tinyary/          núcleo, plugin de Vite y cliente
 packages/tinyary/src/arykit/  átomos, server state y DevTools
-packages/create-tinyary/   CLI y template
+packages/create-tinyary/   CLI y templates (bare, global-state, server-state)
 examples/hello/            ejemplo con Vite e isla de contador
 scripts/smoke.mjs          validación end-to-end
 ```

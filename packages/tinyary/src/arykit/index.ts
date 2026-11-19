@@ -11,9 +11,12 @@ export {
 
 export {
   clearCache,
+  getQueryDebugState,
   invalidateQueries,
+  subscribeToQueries,
   useAryMutation,
   useAryQuery,
+  type QueryDebugEntry,
   type UseAryQueryOptions,
   type UseAryQueryResult,
   type UseMutationOptions,

@@ -41,11 +41,21 @@ meterlas en scope.
 
 ## CLI
 
-- **Dos templates**: `example` (default) y `minimal`. El CLI copia
-  `templates/<id>` y reemplaza `{{name}}`; se elige con `--template` / `-t`.
-- **`example` no hidrata sólo la isla**: el servidor renderiza la página
-  completa y el cliente hidrata el árbol; la isla es la única parte cuyo
-  estado cambia. Hidratación selectiva queda pendiente.
+- **Tres templates**: `bare` (default), `global-state` y `server-state`.
+  `minimal` queda como alias de `bare` para no romper el comando anterior.
+- **`bare` no trae islas ni AryKit**: sólo `routes/index.tsx` con un loader y
+  un hola mundo.
+- **`global-state`**: un átomo de módulo compartido por dos islas y el
+  `AryDevTools` visible.
+- **`server-state`**: `useAryQuery` contra `/api/time`, con refetch e
+  invalidación. El `server.ts` del template crea un Hono propio y monta las
+  páginas con `app.route('/', pages)` para registrar la API antes del catch-all
+  de `createServer`.
+- **`AryDevTools` muestra átomos y queries**: la caché de `useAryQuery` se
+  expone con `getQueryDebugState` y `subscribeToQueries`, y se puede invalidar
+  desde el panel.
+- **La hidratación sigue siendo de página completa**: `island()` es un
+  marcador; no hay hidratación selectiva todavía.
 - **El entry cliente importa `matchPattern` de `tinyary/client-routes`**, no de
   la raíz, para que un proyecto sin islas no cargue signals ni hooks.
 

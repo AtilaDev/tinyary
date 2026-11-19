@@ -9,6 +9,13 @@ import {
   subscribeToDebug,
   type HistoryEntry,
 } from './ary-atoms'
+import {
+  clearCache,
+  getQueryDebugState,
+  invalidateQueries,
+  subscribeToQueries,
+  type QueryDebugEntry,
+} from './use-ary-query'
 
 type RemoteAtom = {
   id: string
@@ -26,9 +33,15 @@ function formatValue(value: unknown): string {
   }
 }
 
+function formatAge(timestamp: number): string {
+  const seconds = Math.max(0, Math.round((Date.now() - timestamp) / 1000))
+  return seconds < 1 ? 'ahora' : `hace ${seconds}s`
+}
+
 export function AryDevTools({ remoteHost }: { remoteHost?: string }) {
   const [isOpen, setIsOpen] = useState(false)
   const [atoms, setAtoms] = useState(getDebugState())
+  const [queries, setQueries] = useState<QueryDebugEntry[]>(getQueryDebugState())
   const [search, setSearch] = useState('')
   const [history, setHistory] = useState<Map<symbol, HistoryEntry[]>>(new Map())
 
@@ -44,6 +57,7 @@ export function AryDevTools({ remoteHost }: { remoteHost?: string }) {
 
     const currentAtoms = getDebugState()
     setAtoms(currentAtoms)
+    setQueries(getQueryDebugState())
 
     const nextHistory = new Map<symbol, HistoryEntry[]>()
     currentAtoms.forEach((_, id) => {
@@ -90,7 +104,13 @@ export function AryDevTools({ remoteHost }: { remoteHost?: string }) {
     }
 
     refreshState()
-    return subscribeToDebug(refreshState)
+    const unsubscribeAtoms = subscribeToDebug(refreshState)
+    const unsubscribeQueries = subscribeToQueries(refreshState)
+
+    return () => {
+      unsubscribeAtoms()
+      unsubscribeQueries()
+    }
   }, [remoteHost, refreshState])
 
   // Posición inicial una vez que existe window.
@@ -337,6 +357,8 @@ export function AryDevTools({ remoteHost }: { remoteHost?: string }) {
           display: 'flex',
           flexDirection: 'column',
           gap: '12px',
+          flex: 1,
+          minHeight: 0,
         }}
       >
         {atomList.length === 0 ? (
@@ -354,6 +376,133 @@ export function AryDevTools({ remoteHost }: { remoteHost?: string }) {
               onReset={handleReset}
             />
           ))
+        )}
+      </div>
+
+      {/* Caché de queries */}
+      <div
+        style={{
+          padding: '12px 16px 16px',
+          borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+          flexShrink: 0,
+          maxHeight: '40%',
+          overflowY: 'auto',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '8px',
+          }}
+        >
+          <h4
+            style={{
+              margin: 0,
+              color: '#94a3b8',
+              fontSize: '11px',
+              textTransform: 'uppercase',
+            }}
+          >
+            Queries ({queries.length})
+          </h4>
+          {queries.length > 0 && (
+            <button
+              type="button"
+              onClick={() => clearCache()}
+              style={{
+                background: 'transparent',
+                border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '11px',
+                color: '#fca5a5',
+                padding: '2px 6px',
+              }}
+            >
+              Clear all
+            </button>
+          )}
+        </div>
+
+        {queries.length === 0 ? (
+          <p style={{ color: '#64748b', fontSize: '12px', margin: 0 }}>
+            No queries yet.
+          </p>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {queries.map((query) => (
+              <div
+                key={query.key}
+                style={{
+                  background: 'rgba(0, 0, 0, 0.2)',
+                  borderRadius: '8px',
+                  padding: '10px',
+                  border: '1px solid rgba(255, 255, 255, 0.05)',
+                }}
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '6px',
+                  }}
+                >
+                  <span
+                    style={{
+                      fontSize: '13px',
+                      fontWeight: 700,
+                      color: '#e2e8f0',
+                    }}
+                  >
+                    {query.key}
+                  </span>
+                  <span
+                    style={{
+                      fontSize: '11px',
+                      color: query.stale ? '#f59e0b' : '#34d399',
+                    }}
+                  >
+                    {query.stale ? 'stale' : 'fresh'} · {formatAge(query.timestamp)}
+                  </span>
+                </div>
+                <div
+                  style={{
+                    fontFamily: 'monospace',
+                    fontSize: '11px',
+                    color: '#a855f7',
+                    background: 'rgba(0, 0, 0, 0.3)',
+                    padding: '6px',
+                    borderRadius: '4px',
+                    whiteSpace: 'pre-wrap',
+                    wordBreak: 'break-all',
+                    maxHeight: '80px',
+                    overflowY: 'auto',
+                  }}
+                >
+                  {formatValue(query.data)}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => invalidateQueries(query.key)}
+                  style={{
+                    marginTop: '6px',
+                    background: '#3b82f6',
+                    border: 'none',
+                    borderRadius: '4px',
+                    color: 'white',
+                    padding: '2px 6px',
+                    fontSize: '10px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Invalidate
+                </button>
+              </div>
+            ))}
+          </div>
         )}
       </div>
 

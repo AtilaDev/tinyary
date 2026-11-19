@@ -9,16 +9,6 @@ body {
   margin: 0;
 }
 
-nav {
-  padding: 1rem 1.5rem;
-  border-bottom: 1px solid #30363d;
-}
-
-nav a {
-  color: #58a6ff;
-  text-decoration: none;
-}
-
 main {
   max-width: 42rem;
   margin: 0 auto;
@@ -27,27 +17,25 @@ main {
 
 p {
   color: #8b949e;
-}
-
-ol {
-  color: #8b949e;
   line-height: 1.6;
 }
 
+strong,
 code {
   color: #e6edf3;
 }
 
-.island {
-  margin-top: 2rem;
-  padding: 1.5rem;
+.card {
+  margin-top: 1rem;
+  padding: 1.25rem;
   border: 1px solid #30363d;
   border-radius: 0.75rem;
   background: #161b22;
 }
 
-.island h2 {
-  margin-top: 0;
+.actions {
+  display: flex;
+  gap: 0.75rem;
 }
 
 button {

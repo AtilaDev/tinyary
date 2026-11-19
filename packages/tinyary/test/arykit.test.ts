@@ -23,6 +23,8 @@ describe('AryKit', () => {
     expect(typeof arykit.useAryMutation).toBe('function')
     expect(typeof arykit.invalidateQueries).toBe('function')
     expect(typeof arykit.clearCache).toBe('function')
+    expect(typeof arykit.getQueryDebugState).toBe('function')
+    expect(typeof arykit.subscribeToQueries).toBe('function')
     expect(typeof arykit.AryDevTools).toBe('function')
   })
 
@@ -139,5 +141,20 @@ describe('AryKit', () => {
     const html = renderToString(h(arykit.AryDevTools, { remoteHost: undefined }))
 
     expect(html).toContain('Abrir AryAtoms DevTools')
+  })
+
+  it('expone el estado de queries y notifica al limpiar la caché', () => {
+    expect(Array.isArray(arykit.getQueryDebugState())).toBe(true)
+
+    let llamadas = 0
+    const unsubscribe = arykit.subscribeToQueries(() => {
+      llamadas++
+    })
+
+    arykit.clearCache()
+    unsubscribe()
+    arykit.clearCache()
+
+    expect(llamadas).toBe(1)
   })
 })

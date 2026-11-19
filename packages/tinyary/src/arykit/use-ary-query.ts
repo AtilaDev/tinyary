@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'preact/hooks'
 interface CacheEntry<TData = unknown> {
   data: TData
   timestamp: number
+  staleTime: number
 }
 
 // Caché global de queries.
@@ -10,6 +11,38 @@ const cache = new Map<string, CacheEntry>()
 
 // Suscriptores por query para invalidaciones y refetch.
 const listeners = new Map<string, Set<() => void>>()
+
+// Suscriptores del panel de DevTools.
+const queryDebugSubscribers = new Set<() => void>()
+
+function notifyQueryDebug() {
+  queryDebugSubscribers.forEach((callback) => callback())
+}
+
+export interface QueryDebugEntry {
+  key: string
+  data: unknown
+  timestamp: number
+  stale: boolean
+}
+
+export function subscribeToQueries(callback: () => void) {
+  queryDebugSubscribers.add(callback)
+  return () => {
+    queryDebugSubscribers.delete(callback)
+  }
+}
+
+export function getQueryDebugState(): QueryDebugEntry[] {
+  const now = Date.now()
+
+  return [...cache.entries()].map(([key, entry]) => ({
+    key,
+    data: entry.data,
+    timestamp: entry.timestamp,
+    stale: now - entry.timestamp >= entry.staleTime,
+  }))
+}
 
 export interface UseAryQueryOptions {
   enabled?: boolean
@@ -60,6 +93,7 @@ export function useAryQuery<TData = unknown, TError = unknown>(
           const latestListeners = listeners.get(queryKey)
           if (!latestListeners || latestListeners.size === 0) {
             cache.delete(queryKey)
+            notifyQueryDebug()
           }
         }, cacheTime)
       }
@@ -90,7 +124,8 @@ export function useAryQuery<TData = unknown, TError = unknown>(
         const result = await queryFnRef.current()
         if (cancelled) return
 
-        cache.set(queryKey, { data: result, timestamp: Date.now() })
+        cache.set(queryKey, { data: result, timestamp: Date.now(), staleTime })
+        notifyQueryDebug()
         setData(result)
         setError(null)
       } catch (caught) {
@@ -123,6 +158,8 @@ export function invalidateQueries(queryKeys: string | string[]): void {
     cache.delete(key)
     listeners.get(key)?.forEach((listener) => listener())
   })
+
+  notifyQueryDebug()
 }
 
 /** Limpia todo el caché y avisa a los consumidores. */
@@ -131,6 +168,7 @@ export function clearCache(): void {
   listeners.forEach((listenerSet) => {
     listenerSet.forEach((listener) => listener())
   })
+  notifyQueryDebug()
 }
 
 export interface UseMutationOptions<TData, TError, TVariables> {

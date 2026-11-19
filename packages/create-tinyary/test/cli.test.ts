@@ -12,6 +12,10 @@ function run(name = 'demo', args: string[] = []) {
   return spawnSync(process.execPath, [bin, name, ...args], { cwd, encoding: 'utf8' })
 }
 
+function read(relative: string) {
+  return readFileSync(join(cwd, 'demo', relative), 'utf8')
+}
+
 beforeEach(() => {
   cwd = mkdtempSync(join(tmpdir(), 'tinyary-cli-'))
 })
@@ -21,54 +25,79 @@ afterEach(() => {
 })
 
 describe('create-tinyary', () => {
-  it('copia los archivos esenciales del template por defecto', () => {
+  it('genera el template bare por defecto, sin islas ni AryKit', () => {
     const result = run()
 
     expect(result.status).toBe(0)
+    expect(result.stdout).toMatch(/template "bare"/)
     expect(existsSync(join(cwd, 'demo/package.json'))).toBe(true)
     expect(existsSync(join(cwd, 'demo/routes/index.tsx'))).toBe(true)
     expect(existsSync(join(cwd, 'demo/vite.config.ts'))).toBe(true)
     expect(existsSync(join(cwd, 'demo/server.ts'))).toBe(true)
+    expect(existsSync(join(cwd, 'demo/routes/islands'))).toBe(false)
+    expect(existsSync(join(cwd, 'demo/routes/layout.tsx'))).toBe(false)
+    expect(read('routes/index.tsx')).not.toContain('arykit')
   })
 
-  it('usa el template example por defecto, con isla y layout', () => {
-    const result = run()
+  it('genera el ejemplo de estado global con átomos y DevTools', () => {
+    const result = run('demo', ['--template', 'global-state'])
 
     expect(result.status).toBe(0)
-    expect(result.stdout).toMatch(/template "example"/)
-    expect(existsSync(join(cwd, 'demo/routes/islands/counter.tsx'))).toBe(true)
-    expect(existsSync(join(cwd, 'demo/routes/layout.tsx'))).toBe(true)
+    expect(result.stdout).toMatch(/template "global-state"/)
+    expect(existsSync(join(cwd, 'demo/routes/islands/global-counter.tsx'))).toBe(true)
+
+    const island = read('routes/islands/global-counter.tsx')
+    expect(island).toContain("from 'tinyary/arykit'")
+    expect(island).toContain('createAry')
+    expect(island).toContain('useAryState')
+    expect(island).toContain('island(')
+    expect(read('routes/index.tsx')).toContain('AryDevTools')
   })
 
-  it('genera un proyecto mínimo con --template minimal', () => {
+  it('genera el ejemplo de useAryQuery con endpoint y DevTools', () => {
+    const result = run('demo', ['--template', 'server-state'])
+
+    expect(result.status).toBe(0)
+    expect(result.stdout).toMatch(/template "server-state"/)
+    expect(existsSync(join(cwd, 'demo/routes/islands/query-panel.tsx'))).toBe(true)
+
+    const island = read('routes/islands/query-panel.tsx')
+    expect(island).toContain('useAryQuery')
+    expect(island).toContain('invalidateQueries')
+    expect(island).toContain("fetch('/api/time')")
+
+    const server = read('server.ts')
+    expect(server).toContain("app.get('/api/time'")
+    expect(read('routes/index.tsx')).toContain('AryDevTools')
+  })
+
+  it('acepta --template=server-state', () => {
+    const result = run('demo', ['--template=server-state'])
+
+    expect(result.status).toBe(0)
+    expect(existsSync(join(cwd, 'demo/routes/islands/query-panel.tsx'))).toBe(true)
+  })
+
+  it('mantiene minimal como alias de bare', () => {
     const result = run('demo', ['--template', 'minimal'])
 
     expect(result.status).toBe(0)
-    expect(result.stdout).toMatch(/template "minimal"/)
-    expect(existsSync(join(cwd, 'demo/routes/index.tsx'))).toBe(true)
-    expect(existsSync(join(cwd, 'demo/routes/islands/counter.tsx'))).toBe(false)
-    expect(existsSync(join(cwd, 'demo/routes/layout.tsx'))).toBe(false)
+    expect(result.stdout).toMatch(/template "bare"/)
+    expect(existsSync(join(cwd, 'demo/routes/islands'))).toBe(false)
   })
 
-  it('acepta --template=minimal', () => {
-    const result = run('demo', ['--template=minimal'])
-
-    expect(result.status).toBe(0)
-    expect(existsSync(join(cwd, 'demo/routes/islands/counter.tsx'))).toBe(false)
-  })
-
-  it('falla con un template desconocido', () => {
+  it('falla con un template desconocido y lista las opciones', () => {
     const result = run('demo', ['--template', 'otro'])
 
     expect(result.status).toBe(1)
     expect(result.stderr).toMatch(/template desconocido/i)
-    expect(result.stderr).toMatch(/example, minimal/)
+    expect(result.stderr).toMatch(/bare, global-state, server-state/)
   })
 
   it('reemplaza el nombre en package.json', () => {
     expect(run().status).toBe(0)
 
-    const pkg = JSON.parse(readFileSync(join(cwd, 'demo/package.json'), 'utf8'))
+    const pkg = JSON.parse(read('package.json'))
     expect(pkg.name).toBe('demo')
     expect(pkg.dependencies.tinyary).toMatch(/^link:\//)
   })
@@ -76,7 +105,7 @@ describe('create-tinyary', () => {
   it('reemplaza el nombre en index.html sin dejar placeholders', () => {
     expect(run().status).toBe(0)
 
-    const html = readFileSync(join(cwd, 'demo/index.html'), 'utf8')
+    const html = read('index.html')
     expect(html).toContain('demo')
     expect(html).not.toContain('{{name}}')
   })
@@ -94,8 +123,9 @@ describe('create-tinyary', () => {
 
     expect(result.status).toBe(1)
     expect(result.stderr).toMatch(/uso: create-tinyary <nombre>/i)
-    expect(result.stderr).toMatch(/example/)
-    expect(result.stderr).toMatch(/minimal/)
+    expect(result.stderr).toMatch(/bare/)
+    expect(result.stderr).toMatch(/global-state/)
+    expect(result.stderr).toMatch(/server-state/)
   })
 
   it('muestra la ayuda con --help', () => {
@@ -103,7 +133,8 @@ describe('create-tinyary', () => {
 
     expect(result.status).toBe(0)
     expect(result.stdout).toMatch(/uso: create-tinyary/i)
-    expect(result.stdout).toMatch(/example/)
-    expect(result.stdout).toMatch(/minimal/)
+    expect(result.stdout).toMatch(/bare/)
+    expect(result.stdout).toMatch(/global-state/)
+    expect(result.stdout).toMatch(/server-state/)
   })
 })
