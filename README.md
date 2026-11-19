@@ -149,14 +149,10 @@ export default function Login({ result }: PageProps<{}, { error?: string }>) {
 
 ```tsx
 // routes/items/[id]/index.tsx
-import type { PageProps, RequestCtx } from 'tinyary'
+import type { PageProps } from 'tinyary'
 
-export const loader = async ({ params }: RequestCtx) => ({
-  item: await db.get(params.id),
-})
-
-export default function Item({ data, params }: PageProps) {
-  return <h1>{data.item.title} ({params.id})</h1>
+export default function Page({ data }: PageProps<{ item: { title: string } }>) {
+  return <h1>{data.item.title}</h1>
 }
 ```
 
