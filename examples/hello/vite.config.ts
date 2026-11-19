@@ -12,7 +12,7 @@ export default defineConfig({
     dedupe: ['preact'],
   },
   optimizeDeps: {
-    include: ['preact', 'preact/hooks'],
+    include: ['preact', 'preact/hooks', 'preact/compat'],
   },
   server: {
     port: Number(process.env.PORT ?? 3000),

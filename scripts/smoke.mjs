@@ -94,6 +94,18 @@ try {
     signalsHtml.includes('<strong>10</strong>'),
   )
 
+  const arykit = await fetch(`${base}/arykit`)
+  const arykitHtml = await arykit.text()
+  check('GET /arykit responde 200', arykit.status === 200, `status ${arykit.status}`)
+  check(
+    'GET /arykit renderiza el átomo inicial en el servidor',
+    arykitHtml.includes('Valor compartido: <strong>0</strong>'),
+  )
+  check(
+    'GET /arykit incluye el botón de DevTools',
+    arykitHtml.includes('Abrir AryAtoms DevTools'),
+  )
+
   check('GET / incluye el client-entry', homeHtml.includes('<script type="module"'))
 } catch (error) {
   failures++

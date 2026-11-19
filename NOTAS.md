@@ -49,6 +49,25 @@ meterlas en scope.
 - **El entry cliente importa `matchPattern` de `tinyary/client-routes`**, no de
   la raíz, para que un proyecto sin islas no cargue signals ni hooks.
 
+## AryKit
+
+- **Vive en `tinyary/arykit`, no en la raíz.** La raíz queda browser-safe y
+  liviana; AryKit trae `preact/compat` y el DevTools, que no toda app necesita.
+- **Port directo a Preact.** `useSyncExternalStore` sale de `preact/compat`;
+  el resto son hooks de `preact/hooks`. No queda ninguna referencia a React.
+- **Persistencia diferida un microtask.** `createAry` arranca siempre con el
+  valor inicial y aplica el valor guardado después. Si leyera `localStorage`
+  en el módulo, el primer render del cliente no coincidiría con el HTML del
+  servidor y rompería la hidratación.
+- **La hidratación no reescribe el storage.** `setDebugValue(..., true, true)`
+  evita el write-back al leer el valor persistido.
+- **Bugs corregidos del DevTools original**: había dos efectos de drag (uno
+  actualizaba un estado que no se renderizaba), el listener de `mouseup` no se
+  removía y las filas del historial usaban `Math.random()` como key, lo que las
+  remontaba en cada render.
+- **La carpeta `arykit/` de la raíz no se tocó.** Es un repo git aparte; la
+  copia integrada es la de `packages/tinyary/src/arykit`.
+
 ## Pendiente / ideas fuera de scope
 
 - Cache en `ctx` (hoy `cache.ts` no está cableado al server).

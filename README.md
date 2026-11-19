@@ -135,11 +135,40 @@ Leer `count.value` en el JSX alcanza: el componente se suscribe y vuelve a rende
 
 Hooks, signals, `island` y los tipos se importan todos desde `tinyary`. `preact` es peer dependency y la app lo deduplica; el template ya trae `resolve.dedupe: ['preact']` para que exista una sola instancia.
 
+### AryKit (`tinyary/arykit`)
+
+Estado atómico y server state opcional, portado de React a Preact. Vive en un subpath para que el DevTools no se cargue en todas las páginas.
+
+```tsx
+import { island } from 'tinyary'
+import { createAry, useAryState } from 'tinyary/arykit'
+
+const clicks = createAry(0, { debugLabel: 'clicks' })
+
+function Counter() {
+  const [count, setCount] = useAryState(clicks)
+
+  return <button onClick={() => setCount((value) => value + 1)}>{count}</button>
+}
+
+export default island(Counter)
+```
+
+- `createAry(valorInicial, opciones)` crea un átomo. El mismo átomo se comparte entre islas.
+- `useAryState(atom)` devuelve `[valor, setValor]` y se suscribe a los cambios.
+- `persist: 'clave'` guarda en `localStorage`, o en el `storage` que pases.
+- `useAryQuery` y `useAryMutation` cubren server state con caché, refetch e invalidación.
+- `AryDevTools` es un panel flotante para inspeccionar átomos, resetearlos y hacer time travel.
+
+La persistencia es SSR-safe: el primer render usa el valor inicial y el valor guardado se aplica después de hidratar. Así el HTML del servidor y el primer render del cliente coinciden.
+
+AryKit usa `useSyncExternalStore` de `preact/compat`; no necesita React ni una copia extra de Preact.
+
 ### Reglas
 
 - El estado no se serializa. El SSR pinta el estado inicial y el cliente arranca otra vez desde ese inicial; para continuar un valor del servidor, pasalo como prop desde el loader.
-- No uses signals a nivel de módulo para estado por request: en SSR ese módulo se comparte entre requests y filtra estado. Usá `useSignal` o datos del loader.
-- `useState` y `useSignal` conviven; elegí uno por componente.
+- No uses signals ni átomos de AryKit a nivel de módulo para estado por request: en SSR ese módulo se comparte entre requests y filtra estado. Para datos por request usá el loader.
+- `useState` y `useSignal` conviven; elegí uno por componente. AryKit es una tercera opción, útil cuando varias islas comparten estado.
 
 ## Convenciones de rutas
 
@@ -196,6 +225,7 @@ El template apunta a este checkout con `link:<ruta absoluta>`, porque todavía n
 
 ```text
 packages/tinyary/          núcleo, plugin de Vite y cliente
+packages/tinyary/src/arykit/  átomos, server state y DevTools
 packages/create-tinyary/   CLI y template
 examples/hello/            ejemplo con Vite e isla de contador
 scripts/smoke.mjs          validación end-to-end

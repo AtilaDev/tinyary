@@ -4,6 +4,7 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
+    "./arykit": "./src/arykit/index.ts",
     "./vite": "./src/vite.ts",
     "./server": "./src/server.ts",
     "./client": "./src/client.ts",
