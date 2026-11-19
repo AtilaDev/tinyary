@@ -8,6 +8,31 @@ TypeScript strict. Real SSR, client hydration, file-based router.
 > Not a production framework. It exists to understand the full flow of a request:
 > what runs on the server, what is sent to the browser, and what hydrates.
 
+## Contents
+
+- [In 30 seconds](#in-30-seconds)
+- [Requirements](#requirements)
+- [Quick start](#quick-start)
+- [Server vs. client (the part that confuses most)](#server-vs-client-the-part-that-confuses-most)
+- [Request flow (SSR)](#request-flow-ssr)
+- [Routes, loaders and actions](#routes-loaders-and-actions)
+- [Passing data from server to client](#passing-data-from-server-to-client)
+- [State and interactivity](#state-and-interactivity)
+- [AryKit (`tinyary/arykit`)](#arykit-tinyaryarykit)
+- [State rules and SSR](#state-rules-and-ssr)
+- [Server HTTP: Hono, session, cookies](#server-http-hono-session-cookies)
+- [Virtual modules](#virtual-modules)
+- [Import surface](#import-surface)
+- [Vite config (do not touch without reason)](#vite-config-do-not-touch-without-reason)
+- [Testing your app](#testing-your-app)
+- [CLI `create-tinyary`](#cli-create-tinyary)
+- [Project structure](#project-structure)
+- [Tests, smoke and typecheck](#tests-smoke-and-typecheck)
+- [Tutorial: a fullstack todo list step by step](#tutorial-a-fullstack-todo-list-step-by-step)
+- [Client-side navigation](#client-side-navigation)
+- [Pending](#pending)
+- [AGENTS.md](#agentsmd)
+
 ## In 30 seconds
 
 - Every `routes/<name>/index.tsx` file is a page with its own URL.

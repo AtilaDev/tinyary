@@ -8,6 +8,31 @@ TypeScript estricto. SSR real, hidratación en el cliente, router de archivos.
 > No es un framework de producción. Sirve para entender el flujo completo de un
 > request: qué corre en el servidor, qué se manda al navegador y qué se hidrata.
 
+## Índice
+
+- [En 30 segundos](#en-30-segundos)
+- [Requisitos](#requisitos)
+- [Inicio rápido](#inicio-rapido)
+- [Servidor vs. cliente (la parte que más confunde)](#servidor-vs-cliente-la-parte-que-mas-confunde)
+- [Flujo de un request (SSR)](#flujo-de-un-request-ssr)
+- [Rutas, loaders y actions](#rutas-loaders-y-actions)
+- [Pasar datos del servidor al cliente](#pasar-datos-del-servidor-al-cliente)
+- [Estado e interactividad](#estado-e-interactividad)
+- [AryKit (`tinyary/arykit`)](#arykit-tinyaryarykit)
+- [Reglas de estado y SSR](#reglas-de-estado-y-ssr)
+- [Server HTTP: Hono, sesión, cookies](#server-http-hono-sesion-cookies)
+- [Virtual modules](#virtual-modules)
+- [Superficie de imports](#superficie-de-imports)
+- [Vite config (no tocar sin motivo)](#vite-config-no-tocar-sin-motivo)
+- [Probando tu app](#probando-tu-app)
+- [CLI `create-tinyary`](#cli-create-tinyary)
+- [Estructura del proyecto](#estructura-del-proyecto)
+- [Tests, smoke y typecheck](#tests-smoke-y-typecheck)
+- [Tutorial: un todo list fullstack paso a paso](#tutorial-un-todo-list-fullstack-paso-a-paso)
+- [Navegación client-side](#navegacion-client-side)
+- [Pendiente](#pendiente)
+- [AGENTS.md](#agentsmd)
+
 ## En 30 segundos
 
 - Cada archivo `routes/<algo>/index.tsx` es una página con su propia URL.
