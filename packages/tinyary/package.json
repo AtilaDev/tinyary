@@ -1,0 +1,17 @@
+{
+  "name": "tinyary",
+  "version": "0.0.1",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.13.7",
+    "hono": "^4.6.14",
+    "preact": "^10.25.1",
+    "preact-render-to-string": "^6.5.13"
+  }
+}
