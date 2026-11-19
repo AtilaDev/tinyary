@@ -4,6 +4,11 @@ import { join } from 'node:path'
 import { tmpdir } from 'node:os'
 import { fileURLToPath } from 'node:url'
 import { spawnSync } from 'node:child_process'
+import {
+  DEFAULT_TEMPLATE,
+  chooseTemplate,
+  resolveTemplateAnswer,
+} from '../templates.js'
 
 const bin = fileURLToPath(new URL('../bin.js', import.meta.url))
 let cwd: string
@@ -22,6 +27,39 @@ beforeEach(() => {
 
 afterEach(() => {
   rmSync(cwd, { recursive: true, force: true })
+})
+
+describe('selección interactiva de template', () => {
+  it('resuelve números, nombres, alias y respuesta vacía', () => {
+    expect(resolveTemplateAnswer('1')).toBe('bare')
+    expect(resolveTemplateAnswer('2')).toBe('global-state')
+    expect(resolveTemplateAnswer('3')).toBe('server-state')
+    expect(resolveTemplateAnswer(' 2 ')).toBe('global-state')
+    expect(resolveTemplateAnswer('')).toBe(DEFAULT_TEMPLATE)
+    expect(resolveTemplateAnswer('   ')).toBe(DEFAULT_TEMPLATE)
+    expect(resolveTemplateAnswer('global-state')).toBe('global-state')
+    expect(resolveTemplateAnswer('minimal')).toBe('bare')
+  })
+
+  it('devuelve null para números fuera de rango u opciones desconocidas', () => {
+    expect(resolveTemplateAnswer('0')).toBeNull()
+    expect(resolveTemplateAnswer('4')).toBeNull()
+    expect(resolveTemplateAnswer('2.5')).toBeNull()
+    expect(resolveTemplateAnswer('otro')).toBeNull()
+  })
+
+  it('usa el default sin preguntar cuando no hay TTY', async () => {
+    const logs: string[] = []
+
+    const result = await chooseTemplate({
+      input: { isTTY: false },
+      output: { isTTY: true },
+      log: (message) => logs.push(message),
+    })
+
+    expect(result).toBe(DEFAULT_TEMPLATE)
+    expect(logs).toHaveLength(0)
+  })
 })
 
 describe('create-tinyary', () => {

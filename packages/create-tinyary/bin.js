@@ -3,19 +3,13 @@
 import { cpSync, existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import {
+  ALIASES,
+  DEFAULT_TEMPLATE,
+  TEMPLATES,
+  chooseTemplate,
+} from './templates.js'
 
-const TEMPLATES = {
-  bare: 'hola mundo, sin AryKit ni código de relleno',
-  'global-state': 'estado global con átomos y DevTools',
-  'server-state': 'useAryQuery con caché, refetch y DevTools',
-}
-
-// Alias de compatibilidad: el template antes se llamaba "minimal".
-const ALIASES = {
-  minimal: 'bare',
-}
-
-const DEFAULT_TEMPLATE = 'bare'
 const args = process.argv.slice(2)
 
 if (args.includes('--help') || args.includes('-h')) {
@@ -28,8 +22,19 @@ const templateFromFlag =
 const templateFromEquals = args
   .find((arg) => arg.startsWith('--template='))
   ?.slice('--template='.length)
-const requestedTemplate = templateFromEquals ?? templateFromFlag ?? DEFAULT_TEMPLATE
-const template = ALIASES[requestedTemplate] ?? requestedTemplate
+const requestedTemplate = templateFromEquals ?? templateFromFlag
+
+let template
+if (requestedTemplate) {
+  template = ALIASES[requestedTemplate] ?? requestedTemplate
+
+  if (!(template in TEMPLATES)) {
+    console.error(
+      `Template desconocido: "${requestedTemplate}". Opciones: ${Object.keys(TEMPLATES).join(', ')}.`,
+    )
+    process.exit(1)
+  }
+}
 
 const name = args.find((arg, index) => {
   if (arg.startsWith('-')) return false
@@ -39,13 +44,6 @@ const name = args.find((arg, index) => {
 
 if (!name) {
   printHelp(console.error)
-  process.exit(1)
-}
-
-if (!(template in TEMPLATES)) {
-  console.error(
-    `Template desconocido: "${requestedTemplate}". Opciones: ${Object.keys(TEMPLATES).join(', ')}.`,
-  )
   process.exit(1)
 }
 
@@ -61,6 +59,9 @@ if (existsSync(destination)) {
   console.error(`No se puede crear "${name}": el directorio ya existe (${destination}).`)
   process.exit(1)
 }
+
+// Sin --template y con terminal interactiva, se pregunta qué ejemplo crear.
+template ??= await chooseTemplate()
 
 const templateDir = fileURLToPath(new URL(`./templates/${template}/`, import.meta.url))
 const tinyaryDir = fileURLToPath(new URL('../tinyary/', import.meta.url))
@@ -88,6 +89,7 @@ console.log('  pnpm dev\n')
 
 function printHelp(log = console.log) {
   log('Uso: create-tinyary <nombre> [--template bare|global-state|server-state]\n')
+  log('Sin --template, el CLI pregunta qué ejemplo querés (en una terminal).\n')
   log('Templates:')
   for (const [id, description] of Object.entries(TEMPLATES)) {
     const suffix = id === DEFAULT_TEMPLATE ? ' (default)' : ''

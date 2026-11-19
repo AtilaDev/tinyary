@@ -43,6 +43,9 @@ meterlas en scope.
 
 - **Tres templates**: `bare` (default), `global-state` y `server-state`.
   `minimal` queda como alias de `bare` para no romper el comando anterior.
+- **Sin `--template` el CLI pregunta**: muestra un menú numerado en terminal y
+  acepta número, nombre o alias. Sin TTY (tests, CI, pipes) usa el default sin
+  bloquear; la selección vive en `templates.js` y tiene tests unitarios.
 - **`bare` no trae islas ni AryKit**: sólo `routes/index.tsx` con un loader y
   un hola mundo.
 - **`global-state`**: un átomo de módulo compartido por dos islas y el

@@ -203,6 +203,20 @@ pnpm dev
 
 El template por defecto es `bare`: un hola mundo con loader, sin islas ni AryKit.
 
+Si no pasás `--template`, el CLI muestra un menú y pregunta qué ejemplo querés crear:
+
+```text
+¿Qué ejemplo querés crear?
+
+  1. bare           hola mundo, sin AryKit ni código de relleno (default)
+  2. global-state   estado global con átomos y DevTools
+  3. server-state   useAryQuery con caché, refetch y DevTools
+
+Elegí un número (1-3) [1]:
+```
+
+Acepta el número, el nombre del template o `minimal`. Enter vacío usa `bare`. Sin terminal interactiva (CI, pipes) no pregunta y usa el default, así nunca queda esperando.
+
 Templates disponibles:
 
 | Template | Qué muestra |
