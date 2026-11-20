@@ -12,10 +12,10 @@
 node packages/create-tinyary/bin.js mi-app
 ```
 
-Si tenés terminal interactiva, la CLI pregunta qué features querés agregar:
+If you have an interactive terminal, the CLI asks which features you want to add:
 
 ```
-¿Qué features querés agregar? (números separados por coma, o "all"/"none")
+Which features do you want to add? (comma-separated numbers, or "all"/"none")
 
   1. Persistencia (LowDB)     Todo list persistente en db.json
   2. Auth (iron-session)      Sesiones firmadas en cookies

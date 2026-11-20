@@ -142,7 +142,7 @@ carries `{ data, params, result }`.
 import type { PageProps, RequestCtx } from 'tinyary'
 
 export const loader = async (ctx: RequestCtx) => ({
-  mensaje: 'Hola desde el servidor',
+  mensaje: 'Hello from the server',
 })
 
 export default function Home({ data }: PageProps<{ mensaje: string }>) {
@@ -200,7 +200,7 @@ import type { ComponentChildren } from 'tinyary'
 export default function RootLayout({ children }: { children?: ComponentChildren }) {
   return (
     <>
-      <nav><a href="/">Inicio</a></nav>
+      <nav><a href="/">Home</a></nav>
       <main>{children}</main>
     </>
   )
@@ -473,24 +473,23 @@ yet).
 
 ## Tiny examples
 
-La filosofía de TinyAry es mantener todo **tiny**: sin infraestructura externa,
-sin servicios en la nube, sin dependencias pesadas. Cada ejemplo acá abajo
-demuestra cómo configurar algo (base de datos, estado, etc.) usando solo lo que
-el framework ya expone, siguiendo la golden rule: lo que toca filesystem, DB,
-cookies o secrets corre en el servidor (`loader`/`action` o endpoint Hono); lo
-que toca el DOM corre en el cliente.
+The philosophy of TinyAry is to keep everything **tiny**: no external
+infrastructure, no cloud services, no heavy dependencies. Each example below
+demonstrates how to configure something (database, state, etc.) using only what
+the framework already exposes, following the golden rule: what touches the
+filesystem, DB, cookies or secrets runs on the server (`loader`/`action` or Hono
+endpoint); what touches the DOM runs on the client.
 
-Los ejemplos se van agregando con el tiempo. Si tenés uno que quieras compartir,
-abri un PR.
+Examples are added over time. If you have one to share, open a PR.
 
-| Ejemplo | Qué muestra | Template CLI |
+| Example | What it shows | CLI Template |
 |---|---|---|
-| `fullstack` | Todo list en memoria: 3 rutas, loader + action, PRG. | `--template fullstack` |
-| `lowdb` | Todo list **persistente** con LowDB (`db.json` en disco). Los todos sobreviven a reinicios del servidor. | `--template lowdb` |
+| `fullstack` | In-memory todo list: 3 routes, loader + action, PRG. | `--template fullstack` |
+| `lowdb` | **Persistent** todo list with LowDB (`db.json` on disk). Todos survive server restarts. | `--template lowdb` |
 
-Próximamente: SQLite, SSE, caching, etc. La idea es que cada ejemplo sea
-autocontenido y siga el patrón "tiny": un archivo, una dependencia mínima, cero
-infraestructura.
+Coming soon: SQLite, SSE, caching, etc. The idea is that each example is
+self-contained and follows the "tiny" pattern: one file, minimal dependency,
+zero infrastructure.
 
 ## Project structure
 
@@ -576,13 +575,13 @@ import { addTodo, deleteTodo, listTodos, toggleTodo } from '../lib/todos'
 
 type HomeData = { todos: ReturnType<typeof listTodos> }
 
-// 1) LOADER: corre en el servidor en cada GET (y tras el redirect del action).
+// 1) LOADER: runs on the server on every GET (and after the action's redirect).
 export const loader = async (ctx: RequestCtx) => ({
   todos: listTodos(),
 })
 
-// 2) ACTION: corre en el servidor en cada POST. Muta el store y redirige
-//    (patrón Post/Redirect/Get) para que el loader se re-ejecute.
+// 2) ACTION: runs on the server on every POST. Mutates the store and redirects
+//    (Post/Redirect/Get pattern) so the loader re-runs.
 export const action = async (ctx: ActionCtx) => {
   const intent = String(ctx.form.get('intent') ?? '')
 
@@ -644,9 +643,9 @@ export default function RootLayout({ children }: { children?: ComponentChildren 
   return (
     <div>
       <nav>
-        <a href="/">Inicio</a>
-        <a href="/nosotros">Nosotros</a>
-        <a href="/contacto">Contacto</a>
+        <a href="/">Home</a>
+        <a href="/about">About</a>
+        <a href="/contact">Contact</a>
       </nav>
       <main>{children}</main>
     </div>
@@ -659,11 +658,11 @@ export default function RootLayout({ children }: { children?: ComponentChildren 
 No loader or action: just JSX rendered on the server.
 
 ```tsx
-export default function Nosotros() {
+export default function About() {
   return (
     <section>
-      <h1>Nosotros</h1>
-      <p>TinyAry es un micro framework fullstack.</p>
+      <h1>About</h1>
+      <p>TinyAry is a micro fullstack framework.</p>
     </section>
   )
 }
@@ -681,17 +680,17 @@ type ContactResult = { ok: true; name: string } | { error: string }
 export const action = async (ctx: ActionCtx): Promise<ContactResult> => {
   const name = String(ctx.form.get('name') ?? '').trim()
   const message = String(ctx.form.get('message') ?? '').trim()
-  if (!name) return { error: 'Ingresá tu nombre.' }
-  if (!message) return { error: 'Ingresá un mensaje.' }
+  if (!name) return { error: 'Please enter your name.' }
+  if (!message) return { error: 'Please enter a message.' }
   return { ok: true, name }
 }
 
-export default function Contacto({ result }: PageProps<{}, ContactResult>) {
+export default function Contact({ result }: PageProps<{}, ContactResult>) {
   return (
     <section>
-      <h1>Contacto</h1>
+      <h1>Contact</h1>
       {result && 'ok' in result ? (
-        <p>¡Gracias, {result.name}!</p>
+        <p>Thanks, {result.name}!</p>
       ) : (
         <form method="post">
           {result?.error && <p>{result.error}</p>}
