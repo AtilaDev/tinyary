@@ -3,9 +3,26 @@
 // Role: login page. The form POSTs to /auth/login (Hono route),
 // which validates credentials, sets the signed cookie, and redirects.
 
-import type { PageProps } from 'tinyary'
+import type { PageProps, RequestCtx } from 'tinyary'
 
-export default function LoginPage({ result }: PageProps<{}, { error?: string }>) {
+export const loader = async (ctx: RequestCtx) => {
+  return { user: ctx.user }
+}
+
+export default function LoginPage({ data, result }: PageProps<{ user: { id: string; name: string } | null }, { error?: string }>) {
+  if (data.user) {
+    return (
+      <section class="page">
+        <h1>Already logged in</h1>
+        <p>Active session as <code>{data.user.name}</code>.</p>
+        <form method="post" action="/auth/logout">
+          <button type="submit">Sign out</button>
+        </form>
+        <p><a href="/dashboard">Go to dashboard</a></p>
+      </section>
+    )
+  }
+
   return (
     <section class="page">
       <h1>Login</h1>
