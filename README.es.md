@@ -4,6 +4,10 @@
 
 > [English](./README.md) | Español
 
+> **📖 Guía práctica (wizard + features):** [GUIDE.md](./GUIDE.md) — cómo crear
+> proyectos, usar el wizard, y configurar cada feature (LowDB, iron-session,
+> blog, ws, cache, nanoid, valibot).
+
 Mini framework **fullstack** para proyectos personales. Preact + Vite + Hono +
 TypeScript estricto. SSR real, hidratación en el cliente, router de archivos.
 
