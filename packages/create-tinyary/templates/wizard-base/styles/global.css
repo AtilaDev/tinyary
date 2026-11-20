@@ -6,18 +6,18 @@
  */
 
 :root {
-  color-scheme: light;
-  --bg: #f6f7fb;
-  --surface: #ffffff;
-  --border: #e3e6ee;
-  --text: #1b1f2a;
-  --muted: #6b7280;
-  --primary: #4f46e5;
-  --primary-hover: #4338ca;
-  --danger: #dc2626;
-  --success: #059669;
+  color-scheme: dark;
+  --bg: #0d1117;
+  --surface: #161b22;
+  --border: #30363d;
+  --text: #e6edf3;
+  --muted: #8b949e;
+  --primary: #58a6ff;
+  --primary-hover: #79b8ff;
+  --danger: #f85149;
+  --success: #3fb950;
   --radius: 12px;
-  --shadow: 0 6px 24px rgba(15, 23, 42, 0.06);
+  --shadow: 0 6px 24px rgba(0, 0, 0, 0.3);
   font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
 }
 
@@ -85,7 +85,7 @@ a:hover {
 }
 
 .site-header nav a:hover {
-  background: #eef0f7;
+  background: #21262d;
   color: var(--text);
   text-decoration: none;
 }
@@ -130,7 +130,7 @@ a:hover {
 }
 
 .page code {
-  background: #eef0f7;
+  background: #21262d;
   padding: 2px 6px;
   border-radius: 6px;
   font-size: 0.9em;
@@ -150,13 +150,15 @@ a:hover {
   border: 1px solid var(--border);
   border-radius: 8px;
   font: inherit;
+  background: var(--surface);
+  color: var(--text);
   outline: none;
   transition: border-color 0.15s, box-shadow 0.15s;
 }
 
 .add-form input[type='text']:focus {
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+  box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.15);
 }
 
 /* ---- Lista de todos ---- */
@@ -178,12 +180,12 @@ a:hover {
   padding: 10px 12px;
   border: 1px solid var(--border);
   border-radius: 8px;
-  background: #fafbfd;
+  background: #1c2128;
   transition: background 0.15s;
 }
 
 .todo:hover {
-  background: #f3f4fb;
+  background: #21262d;
 }
 
 .todo.done .text {
@@ -223,7 +225,7 @@ a:hover {
 
 .delete:hover {
   color: var(--danger);
-  background: #fde8e8;
+  background: #3d1f1f;
 }
 
 .inline {
@@ -266,7 +268,55 @@ button:active {
   transform: translateY(1px);
 }
 
-/* ---- Formulario de contacto ---- */
+/* ---- Formulario de login ---- */
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 360px;
+}
+
+.login-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.login-form input {
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font: inherit;
+  background: var(--surface);
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.login-form input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.15);
+}
+
+/* ---- Inputs genéricos ---- */
+
+input, textarea, select {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font: inherit;
+  outline: none;
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.15);
+}
 
 .contact-form {
   display: flex;
@@ -289,6 +339,8 @@ button:active {
   border: 1px solid var(--border);
   border-radius: 8px;
   font: inherit;
+  background: var(--surface);
+  color: var(--text);
   outline: none;
   resize: vertical;
   transition: border-color 0.15s, box-shadow 0.15s;
@@ -297,7 +349,7 @@ button:active {
 .contact-form input:focus,
 .contact-form textarea:focus {
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+  box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.15);
 }
 
 .success {
