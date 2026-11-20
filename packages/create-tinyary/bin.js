@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-import { cpSync, existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
-import { join, resolve } from 'node:path'
+import { cpSync, existsSync, readFileSync, readdirSync, writeFileSync, mkdirSync } from 'node:fs'
+import { join, resolve, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import {
   ALIASES,
@@ -9,6 +9,7 @@ import {
   TEMPLATES,
   chooseTemplate,
 } from './templates.js'
+import { FEATURES } from './features.js'
 
 const args = process.argv.slice(2)
 
@@ -16,6 +17,7 @@ if (args.includes('--help') || args.includes('-h')) {
   printHelp()
   process.exit(0)
 }
+
 const templateFlagIndex = args.findIndex((arg) => arg === '--template' || arg === '-t')
 const templateFromFlag =
   templateFlagIndex === -1 ? undefined : args[templateFlagIndex + 1]
@@ -23,6 +25,7 @@ const templateFromEquals = args
   .find((arg) => arg.startsWith('--template='))
   ?.slice('--template='.length)
 const requestedTemplate = templateFromEquals ?? templateFromFlag
+const wizardFlag = args.includes('--wizard') || args.includes('-w')
 
 let template
 if (requestedTemplate) {
@@ -60,41 +63,60 @@ if (existsSync(destination)) {
   process.exit(1)
 }
 
-// Sin --template y con terminal interactiva, se pregunta qué ejemplo crear.
-template ??= await chooseTemplate()
+// Decide: wizard o template tradicional
+const useWizard = wizardFlag || (!requestedTemplate && process.stdin.isTTY)
 
-const templateDir = fileURLToPath(new URL(`./templates/${template}/`, import.meta.url))
-const tinyaryDir = fileURLToPath(new URL('../tinyary/', import.meta.url))
+let selectedFeatures = []
+if (useWizard) {
+  selectedFeatures = await chooseFeatures()
+}
 
+// Sin --template y con terminal interactiva (y sin wizard), se pregunta qué template.
+if (!requestedTemplate && !useWizard) {
+  template ??= await chooseTemplate()
+}
+if (!template && !useWizard) template = DEFAULT_TEMPLATE
+
+const __dirname = dirname(fileURLToPath(import.meta.url))
+
+// Copiar base
+const baseTemplate = useWizard ? 'wizard-base' : template
+const templateDir = fileURLToPath(new URL(`./templates/${baseTemplate}/`, import.meta.url))
 cpSync(templateDir, destination, { recursive: true })
 
+// Aplicar features seleccionadas
+if (useWizard && selectedFeatures.length > 0) {
+  applyFeatures(destination, selectedFeatures, __dirname)
+}
+
+// Reemplazar {{name}} en todos los archivos
 for (const file of walk(destination)) {
   const content = readFileSync(file, 'utf8')
   writeFileSync(file, content.replaceAll('{{name}}', name))
 }
 
-// DECISIÓN: desde el checkout hay que consumir el paquete local. Publicar el
-// CLI y reemplazar esto por una versión de registry queda fuera de esta etapa.
+// Consumir el paquete local
 const packageFile = join(destination, 'package.json')
 const pkg = JSON.parse(readFileSync(packageFile, 'utf8'))
-// DECISIÓN: symlink local para que Node24 no seque a .pnpm con type stripping.
-pkg.dependencies.tinyary = pkg.dependencies.tinyary.replace('%TINYARY_ROOT%', tinyaryDir)
+pkg.dependencies.tinyary = pkg.dependencies.tinyary.replace('%TINYARY_ROOT%', join(__dirname, '..', 'tinyary'))
 writeFileSync(packageFile, `${JSON.stringify(pkg, null, 2)}\n`)
 
-console.log(`\nCreé ${name} con el template "${template}" (${TEMPLATES[template]}).\n`)
+console.log(`\nCreé ${name} con ${useWizard ? `wizard (${selectedFeatures.length} features)` : `template "${template}"`}.\n`)
 console.log('Próximos pasos:\n')
 console.log(`  cd ${name}`)
 console.log('  pnpm install')
 console.log('  pnpm dev\n')
 
 function printHelp(log = console.log) {
-  log('Uso: create-tinyary <nombre> [--template bare|global-state|server-state|fullstack|lowdb]\n')
-  log('Sin --template, el CLI pregunta qué ejemplo querés (en una terminal).\n')
+  log('Uso: create-tinyary <nombre> [--template bare|global-state|server-state|fullstack|lowdb] [--wizard]\n')
+  log('Sin --template y con terminal interactiva, la CLI pregunta qué template o features querés.\n')
   log('Templates:')
   for (const [id, description] of Object.entries(TEMPLATES)) {
     const suffix = id === DEFAULT_TEMPLATE ? ' (default)' : ''
     log(`  ${id.padEnd(14)} ${description}${suffix}`)
   }
+  log('')
+  log('Wizard (--wizard): elige features opcionales (LowDB, iron-session, blog, ws, cache, nanoid, valibot).')
 }
 
 function* walk(dir) {
@@ -102,5 +124,109 @@ function* walk(dir) {
     const path = join(dir, entry.name)
     if (entry.isDirectory()) yield* walk(path)
     else yield path
+  }
+}
+
+async function chooseFeatures() {
+  const entries = FEATURES
+
+  console.log('\n¿Qué features querés agregar? (números separados por coma, o "all"/"none")\n')
+  entries.forEach((f, i) => {
+    console.log(`  ${i + 1}. ${f.label.padEnd(24)} ${f.description}`)
+  })
+  console.log('')
+
+  const { createInterface } = await import('node:readline/promises')
+  const rl = createInterface({ input: process.stdin, output: process.stdout })
+
+  const onSigint = () => { rl.close(); console.log('\nCancelado.'); process.exit(130) }
+  rl.on('SIGINT', onSigint)
+
+  try {
+    const answer = await rl.question(`Elegí (ej: 1,3,5) [none]: `)
+    const value = answer.trim().toLowerCase()
+
+    if (value === '' || value === 'none') return []
+    if (value === 'all') return [...entries]
+
+    const nums = value.split(',').map((s) => s.trim()).filter(Boolean)
+    const selected = []
+    for (const n of nums) {
+      const idx = Number(n) - 1
+      if (idx >= 0 && idx < entries.length) selected.push(entries[idx])
+      else console.log(`  Opción inválida: ${n}`)
+    }
+    return selected
+  } finally {
+    rl.off('SIGINT', onSigint)
+    rl.close()
+  }
+}
+
+function applyFeatures(destination, selectedFeatures, __dirname) {
+  const featuresDir = join(__dirname, 'features')
+
+  // 1. Copiar archivos de cada feature
+  for (const feature of selectedFeatures) {
+    const featureDir = join(featuresDir, feature.id)
+    if (!existsSync(featureDir)) continue
+
+    // Copiar todos los archivos del feature (lib/, routes/, content/, etc.)
+    for (const entry of readdirSync(featureDir, { withFileTypes: true })) {
+      if (entry.name === 'manifest.json') continue
+      const src = join(featureDir, entry.name)
+      const dest = join(destination, entry.name)
+      cpSync(src, dest, { recursive: true, force: true })
+    }
+  }
+
+  // 2. Merge de dependencias en package.json
+  const packageFile = join(destination, 'package.json')
+  const pkg = JSON.parse(readFileSync(packageFile, 'utf8'))
+  for (const feature of selectedFeatures) {
+    if (feature.deps) {
+      Object.assign(pkg.dependencies, feature.deps)
+    }
+    if (feature.devDeps) {
+      Object.assign(pkg.devDependencies, feature.devDeps)
+    }
+  }
+  writeFileSync(packageFile, `${JSON.stringify(pkg, null, 2)}\n`)
+
+  // 3. Agregar nav links al layout.tsx
+  const layoutFile = join(destination, 'routes', 'layout.tsx')
+  if (existsSync(layoutFile)) {
+    let layout = readFileSync(layoutFile, 'utf8')
+    const links = selectedFeatures
+      .flatMap((f) => f.navLinks || [])
+      .map((l) => `          <a href="${l.href}">${l.label}</a>`)
+      .join('\n')
+    layout = layout.replace('          {/* NAV_LINKS */}', links || '          {/* NAV_LINKS */}')
+    writeFileSync(layoutFile, layout)
+  }
+
+  // 4. Agregar secciones de AGENTS.md
+  const agentsFile = join(destination, 'AGENTS.md')
+  if (existsSync(agentsFile)) {
+    let agents = readFileSync(agentsFile, 'utf8')
+    const sections = selectedFeatures
+      .map((f) => f.agentsSection || '')
+      .filter(Boolean)
+      .join('\n')
+    agents = agents.replace('<!-- FEATURES -->', sections || '<!-- FEATURES -->')
+    writeFileSync(agentsFile, agents)
+  }
+
+  // 5. Modificar server.ts si hay serverSetup
+  const serverFile = join(destination, 'server.ts')
+  const serverSetups = selectedFeatures
+    .map((f) => f.serverSetup || '')
+    .filter(Boolean)
+  if (serverSetups.length > 0 && existsSync(serverFile)) {
+    const base = readFileSync(serverFile, 'utf8')
+    // Insertar los setups antes de "export { app }"
+    const setup = serverSetups.join('\n')
+    const modified = base.replace('export { app }', `${setup}\nexport { app }`)
+    writeFileSync(serverFile, modified)
   }
 }
