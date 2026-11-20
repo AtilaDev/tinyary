@@ -217,16 +217,51 @@ function applyFeatures(destination, selectedFeatures, __dirname) {
     writeFileSync(agentsFile, agents)
   }
 
-  // 5. Modificar server.ts si hay serverSetup
+  // 5. Modificar server.ts si hay serverSetup o server-routes.ts
   const serverFile = join(destination, 'server.ts')
   const serverSetups = selectedFeatures
     .map((f) => f.serverSetup || '')
     .filter(Boolean)
-  if (serverSetups.length > 0 && existsSync(serverFile)) {
-    const base = readFileSync(serverFile, 'utf8')
-    // Insertar los setups antes de "export { app }"
-    const setup = serverSetups.join('\n')
-    const modified = base.replace('export { app }', `${setup}\nexport { app }`)
-    writeFileSync(serverFile, modified)
+
+  // Buscar server-routes.ts en las features seleccionadas
+  const serverRouteFiles = selectedFeatures
+    .map((f) => join(featuresDir, f.id, 'server-routes.ts'))
+    .filter((p) => existsSync(p))
+
+  if ((serverSetups.length > 0 || serverRouteFiles.length > 0) && existsSync(serverFile)) {
+    // Generar un server.ts custom que envuelve las páginas
+    let customServer = `import { serve } from '@hono/node-server'
+import { Hono } from 'hono'
+import { app as pages } from 'virtual:tinyary/server-entry'
+
+const app = new Hono()
+
+`
+
+    // Inyectar imports de cada server-routes.ts
+    for (const routeFile of serverRouteFiles) {
+      const content = readFileSync(routeFile, 'utf8')
+      // Extraer los imports (líneas que empiezan con import)
+      const imports = content.split('\n').filter((l) => l.trim().startsWith('import '))
+      const body = content.split('\n').filter((l) => !l.trim().startsWith('import ')).join('\n')
+      customServer += imports.join('\n') + '\n\n'
+      customServer += body + '\n\n'
+    }
+
+    // Inyectar serverSetup strings
+    if (serverSetups.length > 0) {
+      customServer += serverSetups.join('\n') + '\n\n'
+    }
+
+    customServer += "app.route('/', pages)\n\n"
+    customServer += "export { app }\n\n"
+    customServer += "export function start() {\n"
+    customServer += "  const port = Number(process.env.PORT ?? 3000)\n"
+    customServer += "  return serve({ fetch: app.fetch, port }, () => {\n"
+    customServer += "    console.log(`tinyary en http://localhost:${port}`)\n"
+    customServer += "  })\n"
+    customServer += "}\n"
+
+    writeFileSync(serverFile, customServer)
   }
 }

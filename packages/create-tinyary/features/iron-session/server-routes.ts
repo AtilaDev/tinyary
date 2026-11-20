@@ -2,6 +2,7 @@
 // The wizard injects this into server.ts before app.route('/', pages)
 
 import { sealSession } from './lib/session'
+import { setCookie, deleteCookie } from 'hono/cookie'
 
 // POST /auth/login — validate credentials, set signed cookie, redirect
 app.post('/auth/login', async (c) => {
@@ -11,7 +12,7 @@ app.post('/auth/login', async (c) => {
 
   if (username === 'admin' && password === 'tinyary') {
     const sealed = await sealSession({ userId: '1', username })
-    c.cookie('tinyary-session', sealed, { path: '/', httpOnly: true, sameSite: 'Lax', maxAge: 60 * 60 * 24 * 7 })
+    setCookie(c, 'tinyary-session', sealed, { path: '/', httpOnly: true, sameSite: 'Lax', maxAge: 60 * 60 * 24 * 7 })
     return c.redirect('/')
   }
 
@@ -20,7 +21,7 @@ app.post('/auth/login', async (c) => {
 
 // POST/GET /auth/logout — clear the cookie
 const logout = async (c: any) => {
-  c.cookie('tinyary-session', '', { path: '/', maxAge: 0 })
+  deleteCookie(c, 'tinyary-session', { path: '/' })
   return c.redirect('/')
 }
 app.post('/auth/logout', logout)
