@@ -2,7 +2,9 @@
 
 > Un framework diminuto con un corazón enorme. En honor a Ary.
 
-<img src="./TinyAry.png" alt="TinyAry" width="200" />
+<div align="center">
+  <img src="./TinyAry.png" alt="TinyAry" width="200" />
+</div>
 
 > [English](./README.md) | Español
 
