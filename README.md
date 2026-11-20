@@ -4,8 +4,8 @@
 
 > English | [Español](./README.es.md)
 
-> **📖 Guía práctica (wizard + features):** [GUIDE.md](./GUIDE.md) — cómo crear
-> proyectos, usar el wizard, y configurar cada feature (LowDB, iron-session,
+> **📖 Practical guide (wizard + features):** [GUIDE.md](./GUIDE.md) — how to
+> create projects, use the wizard, and configure each feature (LowDB, iron-session,
 > blog, ws, cache, nanoid, valibot).
 
 Micro **fullstack** framework for personal projects. Preact + Vite + Hono +
