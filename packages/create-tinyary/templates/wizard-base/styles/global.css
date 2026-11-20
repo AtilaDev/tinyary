@@ -301,6 +301,17 @@ button:active {
   box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.15);
 }
 
+.input-error {
+  border-color: var(--danger) !important;
+  box-shadow: 0 0 0 3px rgba(248, 81, 73, 0.15) !important;
+}
+
+.field-error {
+  color: var(--danger);
+  font-size: 0.85rem;
+  margin-top: 4px;
+}
+
 /* ---- Inputs genéricos ---- */
 
 input, textarea, select {

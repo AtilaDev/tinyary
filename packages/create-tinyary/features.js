@@ -27,7 +27,7 @@ See \`lib/db.ts\` and \`routes/todos/index.tsx\`.
     id: 'iron-session',
     label: 'Auth (iron-session)',
     description: 'Signed sessions in cookies, no external services',
-    deps: { 'iron-session': '^8.0.4' },
+    deps: { 'iron-session': '^8.0.4', 'valibot': '^1.0.0' },
     navLinks: [{ href: '/login', label: 'Login' }, { href: '/dashboard', label: 'Dashboard' }],
     files: [
       { src: 'lib/session.ts', dest: 'lib/session.ts' },
