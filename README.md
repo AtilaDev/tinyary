@@ -12,6 +12,26 @@
 > create projects, use the wizard, and configure each feature (LowDB, iron-session,
 > blog, ws, cache, nanoid, valibot).
 
+## Built-in integrations (via wizard)
+
+The `create-tinyary` wizard lets you pick features to include out of the box.
+Each one is a self-contained fragment: one dependency, one file, zero
+infrastructure.
+
+| Feature | Dependency | What it does |
+|---|---|---|
+| Persistence | `lowdb` | Todo list persisted in `db.json` (survives restarts) |
+| Auth | `iron-session` | Signed sessions in cookies (no external services) |
+| Blog | `gray-matter` + `marked` | Posts in `.md` files with YAML frontmatter |
+| Real-time | `ws` | WebSocket chat, broadcast to all clients |
+| Cache | `lru-cache` | In-memory LRU cache for loaders |
+| Unique IDs | `nanoid` | Short unique ID generator (~1KB) |
+| Validation | `valibot` | Schema validation (lighter than zod) |
+
+```bash
+node packages/create-tinyary/bin.js mi-app --wizard
+```
+
 Micro **fullstack** framework for personal projects. Preact + Vite + Hono +
 TypeScript strict. Real SSR, client hydration, file-based router.
 
