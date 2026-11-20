@@ -2,6 +2,8 @@
 
 > Un framework diminuto con un corazón enorme. En honor a Ary.
 
+![TinyAry](./TinyAry.png)
+
 > [English](./README.md) | Español
 
 > **📖 Guía práctica (wizard + features):** [GUIDE.md](./GUIDE.md) — cómo crear

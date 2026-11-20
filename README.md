@@ -2,6 +2,8 @@
 
 > A tiny framework with a huge heart. Named after Ary.
 
+![TinyAry](./TinyAry.png)
+
 > English | [Español](./README.es.md)
 
 > **📖 Practical guide (wizard + features):** [GUIDE.md](./GUIDE.md) — how to
