@@ -8,7 +8,7 @@ export default function Nosotros() {
     <section class="page">
       <h1>Nosotros</h1>
       <p class="lead">
-        TinyAry es un mini framework fullstack para entender cómo funciona un
+        TinyAry es un micro framework fullstack para entender cómo funciona un
         request de punta a punta: servidor, HTML, hidratación y cliente.
       </p>
 

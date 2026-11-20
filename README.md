@@ -8,7 +8,7 @@
 > proyectos, usar el wizard, y configurar cada feature (LowDB, iron-session,
 > blog, ws, cache, nanoid, valibot).
 
-Mini **fullstack** framework for personal projects. Preact + Vite + Hono +
+Micro **fullstack** framework for personal projects. Preact + Vite + Hono +
 TypeScript strict. Real SSR, client hydration, file-based router.
 
 > Not a production framework. It exists to understand the full flow of a request:
@@ -663,7 +663,7 @@ export default function Nosotros() {
   return (
     <section>
       <h1>Nosotros</h1>
-      <p>TinyAry es un mini framework fullstack.</p>
+      <p>TinyAry es un micro framework fullstack.</p>
     </section>
   )
 }

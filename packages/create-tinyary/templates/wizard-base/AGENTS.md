@@ -2,7 +2,7 @@
 
 ## What is this project
 
-A project generated with TinyAry (wizard mode), a mini fullstack framework
+A project generated with TinyAry (wizard mode), a micro fullstack framework
 (Preact + Vite + Hono, strict TypeScript). It uses server-side rendering with
 client hydration and a file-based router. This is not a production framework;
 it is meant for learning and small personal projects.
