@@ -32,6 +32,26 @@ infraestructura.
 node packages/create-tinyary/bin.js mi-app --wizard
 ```
 
+### AryKit (`tinyary/arykit`)
+
+TinyAry incluye un kit de estado opcional (opt-in, no incluido por defecto) con
+primitivas de estado atómico y server-state:
+
+| Export | Qué hace |
+|---|---|
+| `createAry` / `useAryState` | Estado atómico compartido entre islands (átomos) |
+| `configureAry` | Configura storage y opciones para los átomos |
+| `useAryQuery` | Server state con caché, refetch e invalidación |
+| `useAryMutation` | Mutaciones con invalidación automática de caché |
+| `invalidateQueries` / `clearCache` | Control manual de caché |
+| `AryDevTools` | Panel de DevTools para átomos y queries |
+
+```ts
+import { createAry, useAryState, AryDevTools } from 'tinyary/arykit'
+```
+
+Los templates `global-state` y `server-state` demuestran AryKit en acción.
+
 Micro framework **fullstack** para proyectos personales. Preact + Vite + Hono +
 TypeScript estricto. SSR real, hidratación en el cliente, router de archivos.
 
