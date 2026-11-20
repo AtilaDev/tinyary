@@ -32,7 +32,7 @@ export const action = async ({ form }: ActionCtx) => {
     await deleteTodo(Number(form.get('id')))
   }
 
-  redirect('/')
+  redirect('/todos')
 }
 
 export default function Home({ data }: PageProps<HomeData>) {
