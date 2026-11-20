@@ -1,6 +1,6 @@
 // routes/blog/[slug]/index.tsx
 //
-// Rol: post individual. El loader lee el .md y renderiza el HTML.
+// Role: individual post. The loader reads the .md and renders HTML.
 
 import { notFound } from 'tinyary'
 import type { PageProps, RequestCtx } from 'tinyary'
@@ -20,7 +20,7 @@ export default function PostPage({ data }: PageProps<{ post: NonNullable<ReturnT
         {data.post.date && <p class="date">{data.post.date}</p>}
         <div class="post-body" dangerouslySetInnerHTML={{ __html: data.post.html }} />
       </article>
-      <p><a href="/blog">← Volver al blog</a></p>
+      <p><a href="/blog">← Back to blog</a></p>
     </section>
   )
 }

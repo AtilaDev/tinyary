@@ -1,9 +1,9 @@
 // server-routes snippet for iron-session
-// El wizard inyecta esto en server.ts antes de app.route('/', pages)
+// The wizard injects this into server.ts before app.route('/', pages)
 
 import { sealSession } from './lib/session'
 
-// POST /auth/login — valida credenciales, setea cookie firmada, redirige
+// POST /auth/login — validate credentials, set signed cookie, redirect
 app.post('/auth/login', async (c) => {
   const form = await c.req.formData()
   const username = String(form.get('username') ?? '').trim()
@@ -18,7 +18,7 @@ app.post('/auth/login', async (c) => {
   return c.redirect('/login?error=1')
 })
 
-// POST/GET /auth/logout — borra la cookie
+// POST/GET /auth/logout — clear the cookie
 const logout = async (c: any) => {
   c.cookie('tinyary-session', '', { path: '/', maxAge: 0 })
   return c.redirect('/')

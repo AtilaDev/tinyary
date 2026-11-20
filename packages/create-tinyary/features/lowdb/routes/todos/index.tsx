@@ -1,14 +1,14 @@
-// routes/index.tsx  (ruta "/")
+// routes/todos/index.tsx
 //
-// Rol: página HOME. Demuestra el ciclo fullstack con persistencia real:
-//   1. El loader corre en el servidor y lee los todos desde db.json (LowDB).
-//   2. El HTML sale completo con la lista ya renderizada.
-//   3. Cada acción (agregar/toggle/borrar) es un POST que corre el action.
-//   4. El action muta el store en disco y redirige (PRG) para re-renderizar
-//      con datos frescos.
+// Role: HOME page. Demonstrates the fullstack cycle with real persistence:
+//   1. The loader runs on the server and reads todos from db.json (LowDB).
+//   2. The HTML ships complete with the list already rendered.
+//   3. Each action (add/toggle/delete) is a POST that runs the action.
+//   4. The action mutates the store on disk and redirects (PRG) to re-render
+//      with fresh data.
 //
-// Diferencia con `fullstack`: acá los todos persisten en db.json. Si reiniciás
-// el servidor, los todos siguen ahí.
+// Difference from `fullstack`: here todos persist in db.json. If you restart
+// the server, the todos are still there.
 
 import { redirect } from 'tinyary'
 import type { ActionCtx, PageProps } from 'tinyary'
@@ -40,11 +40,11 @@ export default function Home({ data }: PageProps<HomeData>) {
 
   return (
     <section class="page">
-      <h1>Lista de tareas</h1>
+      <h1>Todo list</h1>
       <p class="lead">
-        Las tareas viven en <code>db.json</code> (LowDB). Cada botón envía un{' '}
-        <code>POST</code> y el servidor re-renderiza la página con datos frescos.
-        Reiniciá el servidor: los todos siguen ahí.
+        Todos live in <code>db.json</code> (LowDB). Each button sends a{' '}
+        <code>POST</code> and the server re-renders the page with fresh data.
+        Restart the server: the todos are still there.
       </p>
 
       <form method="post" class="add-form">
@@ -52,15 +52,15 @@ export default function Home({ data }: PageProps<HomeData>) {
         <input
           type="text"
           name="text"
-          placeholder="¿Qué hay que hacer?"
+          placeholder="What needs to be done?"
           autocomplete="off"
           required
         />
-        <button type="submit">Agregar</button>
+        <button type="submit">Add</button>
       </form>
 
       {todos.length === 0 ? (
-        <p class="empty">No hay tareas. ¡Agregá la primera!</p>
+        <p class="empty">No todos yet. Add the first one!</p>
       ) : (
         <ul class="todo-list">
           {todos.map((todo) => (
@@ -68,7 +68,7 @@ export default function Home({ data }: PageProps<HomeData>) {
               <form method="post" class="inline">
                 <input type="hidden" name="intent" value="toggle" />
                 <input type="hidden" name="id" value={todo.id} />
-                <button type="submit" class="toggle" title="Marcar como hecha">
+                <button type="submit" class="toggle" title="Mark as done">
                   <span class="check">{todo.done ? '✓' : '○'}</span>
                   <span class="text">{todo.text}</span>
                 </button>
@@ -77,7 +77,7 @@ export default function Home({ data }: PageProps<HomeData>) {
               <form method="post" class="inline">
                 <input type="hidden" name="intent" value="delete" />
                 <input type="hidden" name="id" value={todo.id} />
-                <button type="submit" class="delete" title="Borrar">
+                <button type="submit" class="delete" title="Delete">
                   ✕
                 </button>
               </form>
@@ -87,8 +87,8 @@ export default function Home({ data }: PageProps<HomeData>) {
       )}
 
       <p class="hint">
-        Tip: abrí dos pestañas y agregá una tarea en una: la otra se actualiza al
-        recargar, porque el estado está en el servidor (y en disco).
+        Tip: open two tabs and add a todo in one: the other updates on reload,
+        because state lives on the server (and on disk).
       </p>
     </section>
   )

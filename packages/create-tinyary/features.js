@@ -1,12 +1,12 @@
-// features.js — catálogo de features opcionales para el wizard.
-// Cada feature es un fragmento autocontenido: archivos a copiar, dependencias
-// a agregar, links de navegación y sección de AGENTS.md.
+// features.js — catalog of optional features for the wizard.
+// Each feature is a self-contained fragment: files to copy, dependencies
+// to add, navigation links, and AGENTS.md section.
 
 export const FEATURES = [
   {
     id: 'lowdb',
-    label: 'Persistencia (LowDB)',
-    description: 'Todo list persistente en db.json (sobrevive a reinicios)',
+    label: 'Persistence (LowDB)',
+    description: 'Persistent todo list in db.json (survives server restarts)',
     deps: { lowdb: '^7.0.1' },
     navLinks: [{ href: '/todos', label: 'Todos' }],
     files: [
@@ -15,18 +15,18 @@ export const FEATURES = [
     ],
     agentsSection: `## LowDB
 
-Persistencia en \`db.json\` con LowDB. Los todos sobreviven a reinicios del
-servidor. Ver \`lib/db.ts\` y \`routes/todos/index.tsx\`.
+Persistence in \`db.json\` with LowDB. Todos survive server restarts.
+See \`lib/db.ts\` and \`routes/todos/index.tsx\`.
 
-- \`db.read()\` / \`db.write()\` son async (file I/O).
-- El store se cachea en memoria del proceso (\`_db\`).
-- Imports dinámicos de \`lowdb/node\` para no bundlear \`node:fs\` en el cliente.
+- \`db.read()\` / \`db.write()\` are async (file I/O).
+- The store is cached in process memory (\`_db\`).
+- Dynamic imports of \`lowdb/node\` to avoid bundling \`node:fs\` in the client.
 `,
   },
   {
     id: 'iron-session',
     label: 'Auth (iron-session)',
-    description: 'Sesiones firmadas en cookies, sin servicios externos',
+    description: 'Signed sessions in cookies, no external services',
     deps: { 'iron-session': '^8.0.4' },
     navLinks: [{ href: '/login', label: 'Login' }, { href: '/dashboard', label: 'Dashboard' }],
     files: [
@@ -36,18 +36,19 @@ servidor. Ver \`lib/db.ts\` y \`routes/todos/index.tsx\`.
     ],
     agentsSection: `## iron-session
 
-Sesiones firmadas en cookies (sin servicios externos). Ver \`lib/session.ts\`,
-\`routes/login/index.tsx\` y \`routes/dashboard/index.tsx\`.
+Signed sessions in cookies (no external services). See \`lib/session.ts\`,
+\`routes/login/index.tsx\` and \`routes/dashboard/index.tsx\`.
 
-- \`getSession()\` lee la cookie firmada; \`setSession()\` la setea.
-- No requiere store externo: la sesión vive en la cookie cifrada.
-- Para producción, configurá \`IRON_SESSION_PASSWORD\` (mín. 32 chars).
+- \`sealSession()\` encrypts session data into a cookie value.
+- \`unsealSession()\` decrypts it back.
+- No external store needed: the session lives in the encrypted cookie.
+- For production, set \`IRON_SESSION_PASSWORD\` (min. 32 chars).
 `,
   },
   {
     id: 'blog',
     label: 'Blog (gray-matter + marked)',
-    description: 'Posts en archivos .md con frontmatter',
+    description: 'Posts in .md files with frontmatter',
     deps: { 'gray-matter': '^4.0.3', 'marked': '^15.0.0' },
     navLinks: [{ href: '/blog', label: 'Blog' }],
     files: [
@@ -58,18 +59,18 @@ Sesiones firmadas en cookies (sin servicios externos). Ver \`lib/session.ts\`,
     ],
     agentsSection: `## Blog (gray-matter + marked)
 
-Posts en archivos Markdown con frontmatter YAML. Ver \`lib/posts.ts\`,
-\`routes/blog/\` y \`content/posts/\`.
+Posts in Markdown files with YAML frontmatter. See \`lib/posts.ts\`,
+\`routes/blog/\` and \`content/posts/\`.
 
-- \`listPosts()\` lee todos los .md de \`content/posts/\`.
-- \`getPost(slug)\` parsea frontmatter + body con gray-matter.
-- El body se renderiza con marked en el loader (HTML).
+- \`listPosts()\` reads all .md files from \`content/posts/\`.
+- \`getPost(slug)\` parses frontmatter + body with gray-matter.
+- The body is rendered to HTML with marked in the loader.
 `,
   },
   {
     id: 'ws',
     label: 'Real-time (WebSocket)',
-    description: 'Chat en tiempo real con ws',
+    description: 'Real-time chat with ws',
     deps: { ws: '^8.18.0' },
     devDeps: { '@types/ws': '^8.5.13' },
     navLinks: [{ href: '/chat', label: 'Chat' }],
@@ -77,69 +78,69 @@ Posts en archivos Markdown con frontmatter YAML. Ver \`lib/posts.ts\`,
       { src: 'routes/chat/index.tsx', dest: 'routes/chat/index.tsx' },
     ],
     serverSetup: `
-// WebSocket: chat en tiempo real
+// WebSocket: real-time chat
 import { WebSocketServer } from 'ws'
 const wss = new WebSocketServer({ noServer: true })
-// (ver routes/chat/index.tsx para el cliente)
+// (see routes/chat/index.tsx for the client)
 `,
     agentsSection: `## WebSocket (ws)
 
-Chat en tiempo real. Ver \`routes/chat/index.tsx\`.
+Real-time chat. See \`routes/chat/index.tsx\`.
 
-- El servidor crea un \`WebSocketServer\` y lo monta en el upgrade del HTTP.
-- El cliente se conecta con \`new WebSocket('ws://...')\`.
-- Los mensajes se broadcastean a todos los clientes conectados.
+- The server creates a \`WebSocketServer\` and mounts it on the HTTP upgrade.
+- The client connects with \`new WebSocket('ws://...')\`.
+- Messages are broadcast to all connected clients.
 `,
   },
   {
     id: 'cache',
     label: 'Cache (lru-cache)',
-    description: 'Cache en memoria para loaders',
+    description: 'In-memory cache for loaders',
     deps: { 'lru-cache': '^11.0.2' },
     files: [
       { src: 'lib/cache.ts', dest: 'lib/cache.ts' },
     ],
     agentsSection: `## Cache (lru-cache)
 
-Cache en memoria con LRU eviction. Ver \`lib/cache.ts\`.
+In-memory cache with LRU eviction. See \`lib/cache.ts\`.
 
 - \`cache.get(key)\` / \`cache.set(key, value, { ttl })\`.
-- Útil para cachear resultados de loaders costosos.
-- El cache vive en memoria del proceso (se pierde al reiniciar).
+- Useful for caching expensive loader results.
+- The cache lives in process memory (lost on restart).
 `,
   },
   {
     id: 'nanoid',
-    label: 'IDs únicos (nanoid)',
-    description: 'Generador de IDs cortos y únicos',
+    label: 'Unique IDs (nanoid)',
+    description: 'Short unique ID generator',
     deps: { nanoid: '^5.0.9' },
     files: [
       { src: 'lib/id.ts', dest: 'lib/id.ts' },
     ],
     agentsSection: `## nanoid
 
-Generador de IDs únicos y cortos. Ver \`lib/id.ts\`.
+Short unique ID generator. See \`lib/id.ts\`.
 
-- \`nanoid()\` genera un ID de 21 caracteres.
-- \`customAlphabet()\` para alfabetos personalizados.
-- Sin dependencias, ~1KB.
+- \`nanoid()\` generates a 21-char ID.
+- \`customAlphabet()\` for custom alphabets.
+- No dependencies, ~1KB.
 `,
   },
   {
     id: 'valibot',
-    label: 'Validación (valibot)',
-    description: 'Validación de schemas (más liviano que zod)',
+    label: 'Validation (valibot)',
+    description: 'Schema validation (lighter than zod)',
     deps: { valibot: '^1.0.0' },
     files: [
       { src: 'lib/validate.ts', dest: 'lib/validate.ts' },
     ],
     agentsSection: `## valibot
 
-Validación de schemas. Ver \`lib/validate.ts\`.
+Schema validation. See \`lib/validate.ts\`.
 
-- \`parse(schema, data)\` valida y retorna datos tipados.
-- Más liviano que zod (~5KB vs ~15KB).
-- Útil para validar forms en actions.
+- \`parse(schema, data)\` validates and returns typed data.
+- Lighter than zod (~5KB vs ~15KB).
+- Useful for validating forms in actions.
 `,
   },
 ]

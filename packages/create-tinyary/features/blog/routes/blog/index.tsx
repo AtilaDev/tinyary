@@ -1,6 +1,6 @@
 // routes/blog/index.tsx
 //
-// Rol: lista de posts. El loader lee los .md de content/posts/.
+// Role: post list. The loader reads .md files from content/posts/.
 
 import type { PageProps } from 'tinyary'
 import { listPosts } from '../../lib/posts'
@@ -14,7 +14,7 @@ export default function BlogIndex({ data }: PageProps<{ posts: ReturnType<typeof
     <section class="page">
       <h1>Blog</h1>
       {data.posts.length === 0 ? (
-        <p class="empty">No hay posts todavía. Agregá un .md en content/posts/.</p>
+        <p class="empty">No posts yet. Add a .md file in content/posts/.</p>
       ) : (
         <ul class="post-list">
           {data.posts.map((post) => (

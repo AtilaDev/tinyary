@@ -1,8 +1,9 @@
 // lib/session.ts
 //
-// Rol: sesiones firmadas con iron-session. La sesión vive en una cookie cifrada
-// (sin store externo). Usamos sealData/unsealData (bajo nivel) para que
-// funcione con el Map de cookies de TinyAry, sin necesitar el Context de Hono.
+// Role: signed sessions with iron-session. The session lives in an encrypted
+// cookie (no external store). The encryption password comes from
+// IRON_SESSION_PASSWORD (min. 32 chars). In dev, if not set, an insecure
+// default is used.
 
 import { sealData, unsealData } from 'iron-session'
 

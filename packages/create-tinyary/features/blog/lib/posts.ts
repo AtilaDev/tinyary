@@ -1,7 +1,7 @@
 // lib/posts.ts
 //
-// Rol: lee posts en Markdown de content/posts/ y los parsea con gray-matter.
-// El body se renderiza a HTML con marked en el loader (server-side).
+// Role: reads Markdown posts from content/posts/ and parses them with gray-matter.
+// The body is rendered to HTML with marked in the loader (server-side).
 
 import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'

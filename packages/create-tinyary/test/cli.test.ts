@@ -178,7 +178,7 @@ describe('create-tinyary', () => {
     const result = run('demo', ['--template', 'otro'])
 
     expect(result.status).toBe(1)
-    expect(result.stderr).toMatch(/template desconocido/i)
+    expect(result.stderr).toMatch(/unknown template/i)
     expect(result.stderr).toMatch(/bare, global-state, server-state, fullstack, lowdb/)
   })
 

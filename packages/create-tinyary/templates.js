@@ -1,9 +1,9 @@
 export const TEMPLATES = {
-  bare: 'hola mundo, sin AryKit ni código de relleno',
-  'global-state': 'estado global con átomos y DevTools',
-  'server-state': 'useAryQuery con caché, refetch y DevTools',
-  fullstack: 'todo list fullstack: 3 rutas (home, nosotros, contacto), todos en el servidor',
-  lowdb: 'todo list persistente con LowDB: los todos sobreviven a reinicios del servidor',
+  bare: 'hello world, no AryKit or boilerplate',
+  'global-state': 'global state with atoms and DevTools',
+  'server-state': 'useAryQuery with cache, refetch and DevTools',
+  fullstack: 'fullstack todo list: 3 routes (home, about, contact), todos on the server',
+  lowdb: 'persistent todo list with LowDB: todos survive server restarts',
 }
 
 // Alias de compatibilidad: el template antes se llamaba "minimal".

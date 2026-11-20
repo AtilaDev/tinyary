@@ -33,7 +33,7 @@ if (requestedTemplate) {
 
   if (!(template in TEMPLATES)) {
     console.error(
-      `Template desconocido: "${requestedTemplate}". Opciones: ${Object.keys(TEMPLATES).join(', ')}.`,
+      `Unknown template: "${requestedTemplate}". Options: ${Object.keys(TEMPLATES).join(', ')}.`,
     )
     process.exit(1)
   }
@@ -101,15 +101,15 @@ const pkg = JSON.parse(readFileSync(packageFile, 'utf8'))
 pkg.dependencies.tinyary = pkg.dependencies.tinyary.replace('%TINYARY_ROOT%', join(__dirname, '..', 'tinyary'))
 writeFileSync(packageFile, `${JSON.stringify(pkg, null, 2)}\n`)
 
-console.log(`\nCreé ${name} con ${useWizard ? `wizard (${selectedFeatures.length} features)` : `template "${template}"`}.\n`)
-console.log('Próximos pasos:\n')
+console.log(`\nCreated ${name} with ${useWizard ? `wizard (${selectedFeatures.length} features)` : `template "${template}"`}.\n`)
+console.log('Next steps:\n')
 console.log(`  cd ${name}`)
 console.log('  pnpm install')
 console.log('  pnpm dev\n')
 
 function printHelp(log = console.log) {
   log('Uso: create-tinyary <nombre> [--template bare|global-state|server-state|fullstack|lowdb] [--wizard]\n')
-  log('Sin --template y con terminal interactiva, la CLI pregunta qué template o features querés.\n')
+  log('Without --template and with an interactive terminal, the CLI asks which template or features you want.\n')
   log('Templates:')
   for (const [id, description] of Object.entries(TEMPLATES)) {
     const suffix = id === DEFAULT_TEMPLATE ? ' (default)' : ''
@@ -130,7 +130,7 @@ function* walk(dir) {
 async function chooseFeatures() {
   const entries = FEATURES
 
-  console.log('\n¿Qué features querés agregar? (números separados por coma, o "all"/"none")\n')
+  console.log('\nWhich features do you want to add? (comma-separated numbers, or "all"/"none")\n')
   entries.forEach((f, i) => {
     console.log(`  ${i + 1}. ${f.label.padEnd(24)} ${f.description}`)
   })
@@ -139,11 +139,11 @@ async function chooseFeatures() {
   const { createInterface } = await import('node:readline/promises')
   const rl = createInterface({ input: process.stdin, output: process.stdout })
 
-  const onSigint = () => { rl.close(); console.log('\nCancelado.'); process.exit(130) }
+  const onSigint = () => { rl.close(); console.log('\nCancelled.'); process.exit(130) }
   rl.on('SIGINT', onSigint)
 
   try {
-    const answer = await rl.question(`Elegí (ej: 1,3,5) [none]: `)
+    const answer = await rl.question(`Choose (e.g. 1,3,5) [none]: `)
     const value = answer.trim().toLowerCase()
 
     if (value === '' || value === 'none') return []
@@ -154,7 +154,7 @@ async function chooseFeatures() {
     for (const n of nums) {
       const idx = Number(n) - 1
       if (idx >= 0 && idx < entries.length) selected.push(entries[idx])
-      else console.log(`  Opción inválida: ${n}`)
+      else console.log(`  Invalid option: ${n}`)
     }
     return selected
   } finally {

@@ -1,6 +1,6 @@
 // routes/dashboard/index.tsx
 //
-// Rol: página protegida. El loader verifica la sesión; si no hay, redirige a /login.
+// Role: protected page. The loader checks the session; if none, redirects to /login.
 
 import { redirect } from 'tinyary'
 import type { PageProps, RequestCtx } from 'tinyary'
@@ -13,11 +13,11 @@ export const loader = async (ctx: RequestCtx) => {
 export default function DashboardPage({ data }: PageProps<{ user: { id: string; name: string } }>) {
   return (
     <section class="page">
-      <h1>Hola, {data.user.name}</h1>
-      <p>Página protegida. Si borrás la cookie <code>tinyary-session</code> y recargás, vas a parar a <code>/login</code>.</p>
+      <h1>Hello, {data.user.name}</h1>
+      <p>Protected page. If you delete the <code>tinyary-session</code> cookie and reload, you'll be redirected to <code>/login</code>.</p>
       <p><code>user id: {data.user.id}</code></p>
       <form method="post" action="/auth/logout">
-        <button type="submit">Cerrar sesión</button>
+        <button type="submit">Sign out</button>
       </form>
     </section>
   )

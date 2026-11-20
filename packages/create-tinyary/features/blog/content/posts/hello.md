@@ -1,17 +1,17 @@
 ---
-title: "Hola mundo"
+title: "Hello world"
 date: "2026-01-01"
 ---
 
-Este es tu primer post. Editá este archivo en `content/posts/hello.md` o creá
-nuevos `.md` con frontmatter YAML.
+This is your first post. Edit this file in `content/posts/hello.md` or create
+new `.md` files with YAML frontmatter.
 
-## Ejemplo de markdown
+## Markdown example
 
-- Listas
-- **Negrita**
-- *Cursiva*
+- Lists
+- **Bold**
+- *Italic*
 
 ```js
-console.log('Hola desde TinyAry')
+console.log('Hello from TinyAry')
 ```
