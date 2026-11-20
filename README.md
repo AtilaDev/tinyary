@@ -2,7 +2,7 @@
 
 > A tiny framework with a huge heart. Named after Ary.
 
-![TinyAry](./TinyAry.png)
+<img src="./TinyAry.png" alt="TinyAry" width="200" />
 
 > English | [Español](./README.es.md)
 

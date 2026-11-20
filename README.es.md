@@ -2,7 +2,7 @@
 
 > Un framework diminuto con un corazón enorme. En honor a Ary.
 
-![TinyAry](./TinyAry.png)
+<img src="./TinyAry.png" alt="TinyAry" width="200" />
 
 > [English](./README.md) | Español
 
