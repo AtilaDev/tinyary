@@ -35,6 +35,7 @@ describe('selección interactiva de template', () => {
     expect(resolveTemplateAnswer('2')).toBe('global-state')
     expect(resolveTemplateAnswer('3')).toBe('server-state')
     expect(resolveTemplateAnswer('4')).toBe('fullstack')
+    expect(resolveTemplateAnswer('5')).toBe('lowdb')
     expect(resolveTemplateAnswer(' 2 ')).toBe('global-state')
     expect(resolveTemplateAnswer('')).toBe(DEFAULT_TEMPLATE)
     expect(resolveTemplateAnswer('   ')).toBe(DEFAULT_TEMPLATE)
@@ -44,7 +45,7 @@ describe('selección interactiva de template', () => {
 
   it('devuelve null para números fuera de rango u opciones desconocidas', () => {
     expect(resolveTemplateAnswer('0')).toBeNull()
-    expect(resolveTemplateAnswer('5')).toBeNull()
+    expect(resolveTemplateAnswer('6')).toBeNull()
     expect(resolveTemplateAnswer('2.5')).toBeNull()
     expect(resolveTemplateAnswer('otro')).toBeNull()
   })
@@ -135,6 +136,29 @@ describe('create-tinyary', () => {
     expect(contacto).toContain('result')
   })
 
+  it('genera el ejemplo de persistencia con LowDB (db.json en disco)', () => {
+    const result = run('demo', ['--template', 'lowdb'])
+
+    expect(result.status).toBe(0)
+    expect(result.stdout).toMatch(/template "lowdb"/)
+    expect(existsSync(join(cwd, 'demo/lib/db.ts'))).toBe(true)
+    expect(existsSync(join(cwd, 'demo/routes/index.tsx'))).toBe(true)
+
+    const db = read('lib/db.ts')
+    expect(db).toContain("lowdb")
+    expect(db).toContain('JSONFile')
+    expect(db).toContain('db.write()')
+
+    const home = read('routes/index.tsx')
+    expect(home).toContain('listTodos')
+    expect(home).toContain('addTodo')
+    expect(home).toContain('redirect')
+
+    const pkg = JSON.parse(read('package.json'))
+    expect(pkg.dependencies.lowdb).toBeTruthy()
+    expect(pkg.dependencies.tinyary).toMatch(/^link:\//)
+  })
+
   it('acepta --template=server-state', () => {
     const result = run('demo', ['--template=server-state'])
 
@@ -155,7 +179,7 @@ describe('create-tinyary', () => {
 
     expect(result.status).toBe(1)
     expect(result.stderr).toMatch(/template desconocido/i)
-    expect(result.stderr).toMatch(/bare, global-state, server-state, fullstack/)
+    expect(result.stderr).toMatch(/bare, global-state, server-state, fullstack, lowdb/)
   })
 
   it('reemplaza el nombre en package.json', () => {

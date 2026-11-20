@@ -445,11 +445,13 @@ pnpm dev
 | `global-state` | Two islands share an atom from `tinyary/arykit`; includes `AryDevTools`. |
 | `server-state` | `useAryQuery` against `/api/time`, refetch, invalidation and `AryDevTools`. |
 | `fullstack` | Fullstack todo list: 3 routes (home, nosotros, contacto), todos on the server. |
+| `lowdb` | Persistent todo list with LowDB: todos survive server restarts (db.json on disk). |
 
 ```bash
 node .../bin.js mi-app --template global-state
 node .../bin.js mi-app --template server-state
 node .../bin.js mi-app --template fullstack
+node .../bin.js mi-app --template lowdb
 ```
 
 Without `--template` the CLI shows a numbered menu and asks which example you
@@ -465,12 +467,33 @@ before mounting the pages.
 The template points at this checkout with `link:<absolute path>` (not published
 yet).
 
+## Tiny examples
+
+La filosofía de TinyAry es mantener todo **tiny**: sin infraestructura externa,
+sin servicios en la nube, sin dependencias pesadas. Cada ejemplo acá abajo
+demuestra cómo configurar algo (base de datos, estado, etc.) usando solo lo que
+el framework ya expone, siguiendo la golden rule: lo que toca filesystem, DB,
+cookies o secrets corre en el servidor (`loader`/`action` o endpoint Hono); lo
+que toca el DOM corre en el cliente.
+
+Los ejemplos se van agregando con el tiempo. Si tenés uno que quieras compartir,
+abri un PR.
+
+| Ejemplo | Qué muestra | Template CLI |
+|---|---|---|
+| `fullstack` | Todo list en memoria: 3 rutas, loader + action, PRG. | `--template fullstack` |
+| `lowdb` | Todo list **persistente** con LowDB (`db.json` en disco). Los todos sobreviven a reinicios del servidor. | `--template lowdb` |
+
+Próximamente: SQLite, SSE, caching, etc. La idea es que cada ejemplo sea
+autocontenido y siga el patrón "tiny": un archivo, una dependencia mínima, cero
+infraestructura.
+
 ## Project structure
 
 ```text
 packages/tinyary/             core, Vite plugin and client
 packages/tinyary/src/arykit/  atoms, server state and DevTools
-packages/create-tinyary/      CLI and templates (bare, global-state, server-state, fullstack)
+packages/create-tinyary/      CLI and templates (bare, global-state, server-state, fullstack, lowdb)
 examples/hello/               example with Vite and a counter island
 scripts/smoke.mjs             end-to-end validation
 ```

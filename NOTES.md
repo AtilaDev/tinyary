@@ -45,9 +45,9 @@ they do not creep into scope.
 
 ## CLI
 
-- **Four templates**: `bare` (default), `global-state`, `server-state` and
-  `fullstack`. `minimal` remains an alias of `bare` to not break the previous
-  command.
+- **Five templates**: `bare` (default), `global-state`, `server-state`,
+  `fullstack` and `lowdb`. `minimal` remains an alias of `bare` to not break
+  the previous command.
 - **Without `--template` the CLI asks**: it shows a numbered menu in the
   terminal and accepts a number, a name or an alias. Without a TTY (tests, CI,
   pipes) it uses the default without blocking; selection lives in

@@ -88,7 +88,7 @@ console.log('  pnpm install')
 console.log('  pnpm dev\n')
 
 function printHelp(log = console.log) {
-  log('Uso: create-tinyary <nombre> [--template bare|global-state|server-state]\n')
+  log('Uso: create-tinyary <nombre> [--template bare|global-state|server-state|fullstack|lowdb]\n')
   log('Sin --template, el CLI pregunta qué ejemplo querés (en una terminal).\n')
   log('Templates:')
   for (const [id, description] of Object.entries(TEMPLATES)) {

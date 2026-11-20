@@ -3,6 +3,7 @@ export const TEMPLATES = {
   'global-state': 'estado global con átomos y DevTools',
   'server-state': 'useAryQuery con caché, refetch y DevTools',
   fullstack: 'todo list fullstack: 3 rutas (home, nosotros, contacto), todos en el servidor',
+  lowdb: 'todo list persistente con LowDB: los todos sobreviven a reinicios del servidor',
 }
 
 // Alias de compatibilidad: el template antes se llamaba "minimal".
